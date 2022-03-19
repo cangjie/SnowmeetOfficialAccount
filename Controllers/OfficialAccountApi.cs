@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.IO;
+using LuqinOfficialAccount.Models;
 namespace LuqinOfficialAccount.Controllers
 {
     [Route("api/[controller]/[Action]")]
@@ -23,8 +24,7 @@ namespace LuqinOfficialAccount.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> PushMessage(string signature,
-            string timestamp, string nonce, string echostr, object postData)
+        public async Task<ActionResult<string>> PushMessage(OAPostData postData)
         {
             string path = $"{Environment.CurrentDirectory}";
 
