@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.IO;
+using System.Text;
 using LuqinOfficialAccount.Models;
 namespace LuqinOfficialAccount.Controllers
 {
@@ -24,8 +25,20 @@ namespace LuqinOfficialAccount.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> PushMessage(OAPostData postData)
+        public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
+            [FromQuery] string timestamp, [FromQuery] string nonce)
         {
+            string body = "";
+            var stream = Request.Body;
+            if (stream != null)
+            {
+                //stream.Seek(0, SeekOrigin.Begin);
+                using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
+                {
+                    body = await reader.ReadToEndAsync();
+                }
+                //stream.Seek(0, SeekOrigin.Begin);
+            }
             string path = $"{Environment.CurrentDirectory}";
 
             if (path.StartsWith("/"))
@@ -39,7 +52,7 @@ namespace LuqinOfficialAccount.Controllers
             path = path + "wechat_post.txt";
             using (StreamWriter fw = new StreamWriter(path, true))
             {
-                fw.WriteLine(postData.ToString());
+                fw.WriteLine(body.ToString());
                 fw.Close();
             }
             return "";
