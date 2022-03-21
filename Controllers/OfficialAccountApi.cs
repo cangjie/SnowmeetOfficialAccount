@@ -3,7 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.IO;
 using System.Text;
+using System.Xml;
+using Microsoft.Extensions.Configuration;
 using LuqinOfficialAccount.Models;
+using System.Security.Cryptography;
+
 namespace LuqinOfficialAccount.Controllers
 {
     [Route("api/[controller]/[Action]")]
@@ -12,9 +16,15 @@ namespace LuqinOfficialAccount.Controllers
     {
         private readonly AppDBContext _context;
 
-        public OfficialAccountApi(AppDBContext context)
+        private readonly IConfiguration _config;
+
+        private readonly Settings _settings;
+
+        public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
+            _settings = Settings.GetSettings(_config);
         }
 
         [HttpGet]
@@ -28,6 +38,23 @@ namespace LuqinOfficialAccount.Controllers
         public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
         {
+            string[] validStringArr = new string[] { _settings.token.Trim(), timestamp.Trim(), nonce.Trim() };
+            Array.Sort(validStringArr);
+            string validString = String.Join("", validStringArr);
+            SHA1 sha = SHA1.Create();
+            ASCIIEncoding enc = new ASCIIEncoding();
+            byte[] bArr = enc.GetBytes(validString);
+            bArr = sha.ComputeHash(bArr);
+            string validResult = "";
+            for (int i = 0; i < bArr.Length; i++)
+            {
+                validResult = validResult + bArr[i].ToString("x").PadLeft(2, '0');
+            }
+            if (validResult != signature)
+            {
+                return NoContent();
+            }
+
             string body = "";
             var stream = Request.Body;
             if (stream != null)
@@ -39,6 +66,13 @@ namespace LuqinOfficialAccount.Controllers
                 }
                 //stream.Seek(0, SeekOrigin.Begin);
             }
+
+            XmlDocument xmlD = new XmlDocument();
+            xmlD.LoadXml(body);
+
+
+
+            /*
             string path = $"{Environment.CurrentDirectory}";
 
             if (path.StartsWith("/"))
@@ -55,6 +89,7 @@ namespace LuqinOfficialAccount.Controllers
                 fw.WriteLine(body.ToString());
                 fw.Close();
             }
+            */
             return "";
         }
 

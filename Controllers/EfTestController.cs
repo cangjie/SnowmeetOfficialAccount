@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LuqinOfficialAccount;
 using LuqinOfficialAccount.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace LuqinOfficialAccount.Controllers
 {
@@ -16,9 +17,15 @@ namespace LuqinOfficialAccount.Controllers
     {
         private readonly AppDBContext _context;
 
-        public EfTestController(AppDBContext context)
+        private readonly IConfiguration _config;
+
+        private readonly Settings _settings;
+
+        public EfTestController(AppDBContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
+            _settings = Settings.GetSettings(_config);
         }
 
         // GET: api/EfTest
