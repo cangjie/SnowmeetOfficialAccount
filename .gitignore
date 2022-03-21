@@ -405,3 +405,4 @@ ASALocalRun/
 .localhistory/
 
 config.sqlServer
+appsettings.*
