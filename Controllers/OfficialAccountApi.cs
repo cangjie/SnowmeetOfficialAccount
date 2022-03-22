@@ -52,37 +52,63 @@ namespace LuqinOfficialAccount.Controllers
             }
             if (validResult != signature)
             {
-                return NoContent();
-                
+                return NoContent(); 
             }
             string body = "";
             var stream = Request.Body;
             if (stream != null)
             {
-                //stream.Seek(0, SeekOrigin.Begin);
+        
                 using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
                 {
                     body = await reader.ReadToEndAsync();
                 }
-                //stream.Seek(0, SeekOrigin.Begin);
+                
             }
-            XmlDocument xmlD = new XmlDocument();
-            xmlD.LoadXml(body);
-            XmlNode root = xmlD.SelectSingleNode("//xml");
-
-            OARecevie msg = new OARecevie()
+            try
             {
-                id = 0,
-                ToUserName = root.SelectSingleNode("ToUserName").InnerText.Trim(),
-                FromUserName = root.SelectSingleNode("FromUserName").InnerText.Trim(),
-                CreateTime = root.SelectSingleNode("CreateTime").InnerText.Trim(),
-                MsgType = root.SelectSingleNode("MsgType").InnerText.Trim(),
-                Event = root.SelectSingleNode("Event").InnerText.Trim(),
-                EventKey = root.SelectSingleNode("EventKey").InnerText.Trim()
+                XmlDocument xmlD = new XmlDocument();
+                xmlD.LoadXml(body);
+                XmlNode root = xmlD.SelectSingleNode("//xml");
 
-            };
-            await _context.oARecevie.AddAsync(msg);
-            await _context.SaveChangesAsync();
+                string eventStr = "";
+                string eventKey = "";
+                string content = "";
+                string msgId = "";
+                string msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
+
+                if (msgType.Trim().Equals("event"))
+                {
+                    eventStr = root.SelectSingleNode("Event").InnerText.Trim();
+                    eventKey = root.SelectSingleNode("EventKey").InnerText.Trim();
+                }
+                else
+                {
+                    content = root.SelectSingleNode("Content").InnerText.Trim();
+                    msgId = root.SelectSingleNode("MsgId").InnerText.Trim();
+                    msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
+                }
+
+                OARecevie msg = new OARecevie()
+                {
+                    id = 0,
+                    ToUserName = root.SelectSingleNode("ToUserName").InnerText.Trim(),
+                    FromUserName = root.SelectSingleNode("FromUserName").InnerText.Trim(),
+                    CreateTime = root.SelectSingleNode("CreateTime").InnerText.Trim(),
+                    MsgType = msgType,
+                    Event = eventStr,
+                    EventKey = eventKey,
+                    MsgId = msgId,
+                    Content = content
+
+                };
+                await _context.oARecevie.AddAsync(msg);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+
+            }
             return "success";
         }
     }
