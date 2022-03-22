@@ -53,8 +53,8 @@ namespace LuqinOfficialAccount.Controllers
             if (validResult != signature)
             {
                 return NoContent();
+                
             }
-
             string body = "";
             var stream = Request.Body;
             if (stream != null)
@@ -66,32 +66,24 @@ namespace LuqinOfficialAccount.Controllers
                 }
                 //stream.Seek(0, SeekOrigin.Begin);
             }
-
             XmlDocument xmlD = new XmlDocument();
             xmlD.LoadXml(body);
+            XmlNode root = xmlD.SelectSingleNode("//xml");
 
-
-
-            /*
-            string path = $"{Environment.CurrentDirectory}";
-
-            if (path.StartsWith("/"))
+            OARecevie msg = new OARecevie()
             {
-                path = path + "/";
-            }
-            else
-            {
-                path = path + "\\";
-            }
-            path = path + "wechat_post.txt";
-            using (StreamWriter fw = new StreamWriter(path, true))
-            {
-                fw.WriteLine(body.ToString());
-                fw.Close();
-            }
-            */
-            return "";
+                id = 0,
+                ToUserName = root.SelectSingleNode("ToUserName").InnerText.Trim(),
+                FromUserName = root.SelectSingleNode("FromUserName").InnerText.Trim(),
+                CreateTime = root.SelectSingleNode("CreateTime").InnerText.Trim(),
+                MsgType = root.SelectSingleNode("MsgType").InnerText.Trim(),
+                Event = root.SelectSingleNode("Event").InnerText.Trim(),
+                EventKey = root.SelectSingleNode("EventKey").InnerText.Trim()
+
+            };
+            await _context.oARecevie.AddAsync(msg);
+            await _context.SaveChangesAsync();
+            return "success";
         }
-
     }
 }
