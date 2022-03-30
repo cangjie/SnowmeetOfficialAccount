@@ -62,6 +62,24 @@ namespace LuqinOfficialAccount.Controllers
                 using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
                 {
                     body = await reader.ReadToEndAsync();
+
+                    string path = $"{Environment.CurrentDirectory}";
+                    string dateStr = DateTime.Now.Year.ToString() + DateTime.Now.Month.ToString().PadLeft(2, '0')
+                        + DateTime.Now.ToString().PadLeft(2, '0');
+                    if (path.StartsWith("/"))
+                    {
+                        path = path + "/";
+                    }
+                    else
+                    {
+                        path = path + "\\";
+                    }
+                    path = path + "wechat_post_" + dateStr + ".txt";
+                    using (StreamWriter fw = new StreamWriter(path, true))
+                    {
+                        fw.WriteLine(body.Trim());
+                        fw.Close();
+                    }
                 }
                 
             }
