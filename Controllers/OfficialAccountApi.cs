@@ -65,7 +65,7 @@ namespace LuqinOfficialAccount.Controllers
 
                     string path = $"{Environment.CurrentDirectory}";
                     string dateStr = DateTime.Now.Year.ToString() + DateTime.Now.Month.ToString().PadLeft(2, '0')
-                        + DateTime.Now.ToString().PadLeft(2, '0');
+                        + DateTime.Now.Date.ToString().PadLeft(2, '0');
                     if (path.StartsWith("/"))
                     {
                         path = path + "/";
