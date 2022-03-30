@@ -12,12 +12,16 @@ namespace LuqinOfficialAccount.Models
         public static Settings GetSettings(IConfiguration config)
         {
             IConfiguration settings = config.GetSection("Settings");
+            string appId = settings.GetSection("AppId").Value.Trim();
+            string appSecret = settings.GetSection("AppSecret").Value.Trim();
+            string originalId = settings.GetSection("OriginalId").Value.Trim();
+            string token = settings.GetSection("token").Value.Trim();
             return new Settings()
             {
-                appId = settings.GetSection("AppId").Value.Trim(),
-                appSecret = settings.GetSection("AppSecret").Value.Trim(), 
-                originalId = settings.GetSection("OriginalId").Value.Trim(),
-                token = settings.GetSection("token").Value.Trim() 
+                appId = appId,
+                appSecret = appSecret, 
+                originalId = originalId,
+                token = token
             };
         }
     }
