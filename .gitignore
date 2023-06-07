@@ -1,3 +1,7 @@
+*.sln
+config.*
+images/
+access_token.official_account
 # globs
 Makefile.in
 *.userprefs
