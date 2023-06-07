@@ -38,6 +38,7 @@ namespace LuqinOfficialAccount.Controllers
         public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
         {
+            string ret = "success";
             string[] validStringArr = new string[] { _settings.token.Trim(), timestamp.Trim(), nonce.Trim() };
             Array.Sort(validStringArr);
             string validString = String.Join("", validStringArr);
@@ -120,14 +121,86 @@ namespace LuqinOfficialAccount.Controllers
                     Content = content
 
                 };
+
                 await _context.oARecevie.AddAsync(msg);
                 await _context.SaveChangesAsync();
+
             }
             catch
             {
 
             }
-            return "success";
+
+            try
+            {
+
+            }
+            catch
+            {
+
+            }
+
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> DealMessage(OARecevie receiveMsg)
+        {
+            string ret = "success";
+            switch (receiveMsg.MsgType.Trim().ToLower())
+            {
+                case "text":
+                    ret = await DealTextMessage(receiveMsg);
+                    break;
+                case "event":
+                    ret = await DealEventMessage(receiveMsg);
+                    break;
+                default:
+                    break;
+            }
+
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> DealTextMessage(OARecevie receiveMsg)
+        {
+            string ret = "success";
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> DealEventMessage(OARecevie receiveMsg)
+        {
+            string ret = "success";
+
+            switch (receiveMsg.Event.ToLower().Trim())
+            {
+                case "scan":
+                    ret = await DealScanMessage(receiveMsg);
+                    break;
+                default:
+                    ret = await DealCommonMessage(receiveMsg);
+                    break;
+            }
+
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> DealCommonMessage(OARecevie receiveMsg)
+        {
+            string ret = "success";
+
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> DealScanMessage(OARecevie receiveMsg)
+        {
+            string ret = "success";
+
+            return ret;
         }
     }
 }
