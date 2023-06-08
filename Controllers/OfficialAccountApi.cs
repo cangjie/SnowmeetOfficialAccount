@@ -260,6 +260,7 @@ namespace SnowmeetOfficialAccount.Controllers
 
                 await _context.oARecevie.AddAsync(msg);
                 await _context.SaveChangesAsync();
+                ret = await DealMessage(msg);
 
             }
             catch
@@ -267,14 +268,6 @@ namespace SnowmeetOfficialAccount.Controllers
 
             }
 
-            try
-            {
-
-            }
-            catch
-            {
-
-            }
 
             return ret;
         }
