@@ -1,7 +1,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using LuqinOfficialAccount.Models;
-namespace LuqinOfficialAccount
+using SnowmeetOfficialAccount.Models;
+namespace SnowmeetOfficialAccount
 {
     public class AppDBContext:DbContext
     {
@@ -14,8 +14,10 @@ namespace LuqinOfficialAccount
 
         }
 
-        public DbSet<LuqinOfficialAccount.Models.EfTest> EfTest { get; set; }
+        public DbSet<SnowmeetOfficialAccount.Models.EfTest> EfTest { get; set; }
 
         public DbSet<OARecevie> oARecevie { get; set; }
+
+        public DbSet<SnowmeetOfficialAccount.Models.OASent> oASent { get; set; }
     }
 }

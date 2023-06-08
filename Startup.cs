@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-namespace LuqinOfficialAccount
+namespace SnowmeetOfficialAccount
 {
     public class Startup
     {

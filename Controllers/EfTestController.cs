@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LuqinOfficialAccount;
-using LuqinOfficialAccount.Models;
+
+using SnowmeetOfficialAccount.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace LuqinOfficialAccount.Controllers
+namespace SnowmeetOfficialAccount.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace LuqinOfficialAccount.Models
+namespace SnowmeetOfficialAccount.Models
 {
     [Table("ef_test")]
     public class EfTest

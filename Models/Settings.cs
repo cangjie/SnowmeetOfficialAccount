@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
-namespace LuqinOfficialAccount.Models
+namespace SnowmeetOfficialAccount.Models
 {
     public class Settings
     {

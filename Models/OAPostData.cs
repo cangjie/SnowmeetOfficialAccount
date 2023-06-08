@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LuqinOfficialAccount.Models
+namespace SnowmeetOfficialAccount.Models
 {
     public class OAPostData
     {
