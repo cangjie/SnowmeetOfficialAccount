@@ -152,26 +152,21 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             string getTokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="
                 + _settings.appId.Trim() + "&secret=" + _settings.appSecret.Trim();
-            try
+
+            string ret = Util.GetWebContent(getTokenUrl);
+            AccessToken at = JsonConvert.DeserializeObject<AccessToken>(ret);
+            if (!at.access_token.Trim().Equals(""))
             {
-                string ret = Util.GetWebContent(getTokenUrl);
-                AccessToken at = JsonConvert.DeserializeObject<AccessToken>(ret);
-                if (!at.access_token.Trim().Equals(""))
-                {
-                    //System.IO.File.AppendAllText(tokenFilePath, at.access_token + "\r\n" + nowTime);
-                    System.IO.File.WriteAllText(tokenFilePath, at.access_token + "\r\n" + nowTime);
-                    return at.access_token.Trim();
-                    //return "";
-                }
-                else
-                {
-                    return "";
-                }
+                //System.IO.File.AppendAllText(tokenFilePath, at.access_token + "\r\n" + nowTime);
+                System.IO.File.WriteAllText(tokenFilePath, at.access_token + "\r\n" + nowTime);
+                return at.access_token.Trim();
+                //return "";
             }
-            catch
+            else
             {
                 return "";
             }
+            
 
         }
 
