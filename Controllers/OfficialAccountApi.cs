@@ -288,7 +288,8 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<ActionResult<string>> DealMessageTest(int id)
         {
             OARecevie msg = await _context.oARecevie.FindAsync(id);
-            return Ok(DealMessage(msg));
+            string ret = await DealMessage(msg);
+            return Ok(ret);
         }
 
         [NonAction]
