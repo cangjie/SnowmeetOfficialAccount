@@ -12,6 +12,8 @@ using SnowmeetOfficialAccount;
 using Azure.Core;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -25,6 +27,7 @@ namespace SnowmeetOfficialAccount.Controllers
 
         private readonly Settings _settings;
 
+        
         public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
@@ -260,6 +263,14 @@ namespace SnowmeetOfficialAccount.Controllers
 
                 await _context.oARecevie.AddAsync(msg);
                 await _context.SaveChangesAsync();
+                try
+                {
+                    await SyncUserInfo(msg.FromUserName.Trim());
+                }
+                catch
+                { 
+                
+                }
                 ret = await DealMessage(msg);
 
             }
@@ -270,6 +281,59 @@ namespace SnowmeetOfficialAccount.Controllers
 
 
             return ret;
+        }
+
+        [NonAction]
+        public async Task<User> SyncUserInfo(string openId)
+        {
+            User user = await _context.user.FindAsync(openId);
+            if (user == null)
+            {
+                user = new User()
+                {
+                    open_id = openId.Trim()
+                };
+                await _context.user.AddAsync(user);
+                await _context.SaveChangesAsync();
+            }
+            try
+            {
+                if (user.union_id.Trim().Equals(""))
+                {
+                    string accessToken = GetAccessToken();
+                    string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken.Trim()
+                    + "&openid=" + openId.Trim() + "&lang=zh_CN";
+                    string ret = Util.GetWebContent(url);
+                    UserInfo info = JsonConvert.DeserializeObject<UserInfo>(ret);
+                    user.union_id = info.unionid;
+                    _context.Entry(user).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch
+            { 
+            
+            }
+            try
+            {
+                if (user.member_id == 0 && !user.union_id.Trim().Equals(""))
+                {
+                    var miniList = await _context.miniUser
+                        .Where(m => (m.union_id.Trim().Equals(user.union_id)))
+                        .ToListAsync();
+                    if (miniList != null && miniList.Count > 0)
+                    {
+                        user.member_id = miniList[0].member_id;
+                        _context.Entry(user).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch
+            { 
+            
+            }
+            return user;
         }
 
         [HttpGet]
