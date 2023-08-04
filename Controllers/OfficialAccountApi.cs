@@ -396,7 +396,6 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealCommonMessage(OARecevie receiveMsg)
         {
             string ret = "success";
-
             return ret;
         }
 
@@ -451,7 +450,41 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
-            string ret = "";
+            string ret = "success";
+            User user = await _context.user.FindAsync(receiveMsg.FromUserName.Trim());
+            if (user == null)
+            {
+                return ret;
+            }
+            int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
+            scan.scan = 1;
+            scan.scaner_oa_open_id = user.open_id.Trim();
+            scan.scaner_union_id = user.union_id.Trim();
+            _context.Entry(scan).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
+            bool isMember = false;
+            if (miniUserList != null && miniUserList.Count > 0)
+            {
+                isMember = true;
+            }
+            string message = "欢迎回来，请等待店员开单。";
+            if (!isMember)
+            {
+                message = "您目前还不是易龙雪聚会员，微信支付后，您会自动成为会员。";
+            }
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = message.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+            ret = reply.GetXmlDocument().InnerXml.Trim();
             return ret;
         }
 
