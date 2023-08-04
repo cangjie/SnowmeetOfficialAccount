@@ -387,9 +387,19 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "pay":
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
+                case "recept":
+                    ret = await ScanRecept(receiveMsg, keyArr);
+                    break;
                 default:
                     break;
             }
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
+        {
+            string ret = "";
             return ret;
         }
 
