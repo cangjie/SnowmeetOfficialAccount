@@ -472,7 +472,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string message = "欢迎回来，请等待店员开单。";
             if (!isMember)
             {
-                message = "您目前还不是易龙雪聚会员，微信支付后，您会自动成为会员。";
+                message = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/register\" >点此注册</a>。";
             }
             OASent reply = new OASent()
             {
@@ -494,7 +494,7 @@ namespace SnowmeetOfficialAccount.Controllers
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             string message = "您有一笔费用需要支付。";
             string miniAppPath = "/pages/payment/pay_hub?paymentId=" + id.ToString();// + "&item=" + item.Trim();
-            message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。";
+            message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
             string ret = "success";
             OASent reply = new OASent()
             {
