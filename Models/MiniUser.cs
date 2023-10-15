@@ -11,6 +11,8 @@ namespace SnowmeetOfficialAccount.Models
 
         public string union_id { get; set; }
         public int member_id { get; set; }
+        public string cell_number { get; set; }
+
 
     }
 }

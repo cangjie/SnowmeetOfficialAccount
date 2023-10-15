@@ -465,9 +465,13 @@ namespace SnowmeetOfficialAccount.Controllers
             await _context.SaveChangesAsync();
             var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
             bool isMember = false;
+            //string cell = "";
             if (miniUserList != null && miniUserList.Count > 0)
             {
-                isMember = true;
+                if (miniUserList[0].cell_number != null && miniUserList[0].cell_number.Length == 11)
+                {
+                    isMember = true;
+                }
             }
             string message = "欢迎回来，请等待店员开单。";
             if (!isMember)
