@@ -498,6 +498,10 @@ namespace SnowmeetOfficialAccount.Controllers
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             string message = "您有一笔费用需要支付。";
             string miniAppPath = "/pages/payment/pay_hub?paymentId=" + id.ToString();// + "&item=" + item.Trim();
+            if (keyArr.Length > 2 && keyArr[1].Trim().ToLower().Equals("recept"))
+            {
+                miniAppPath = "/pages/payment/pay_recept?paymentId=" + id.ToString();
+            }
             message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
             string ret = "success";
             OASent reply = new OASent()
