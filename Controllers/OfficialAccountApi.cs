@@ -460,6 +460,10 @@ namespace SnowmeetOfficialAccount.Controllers
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
             scan.scaner_oa_open_id = user.open_id.Trim();
+            if (user.union_id == null || user.union_id.Trim().Equals(""))
+            {
+                user = (await SyncUserInfo(user.open_id.Trim()));
+            }
             scan.scaner_union_id = user.union_id.Trim();
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
