@@ -132,7 +132,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 long timeDiff = long.Parse(nowTime) - long.Parse(tokenTime);
                 TimeSpan ts = new TimeSpan(0, 0, 0, 0, (int)timeDiff);
                 //TimeSpan ts = new TimeSpan()
-                if (ts.TotalSeconds > 3600)
+                if (ts.TotalSeconds > 300)
                 {
                     token = "";
                     if (fileExists)
@@ -283,7 +283,7 @@ namespace SnowmeetOfficialAccount.Controllers
             return ret;
         }
 
-        [NonAction]
+        [HttpGet]
         public async Task<User> SyncUserInfo(string openId)
         {
             User user = await _context.user.FindAsync(openId);
