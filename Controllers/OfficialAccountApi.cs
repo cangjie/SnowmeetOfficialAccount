@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -41,6 +42,31 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             return echostr.Trim();
         }
+
+        [HttpGet]
+        public async Task SendTextMessage(string unionId, string content)
+        {
+            var l = await _context.user.Where(u => u.union_id.Trim().Equals(unionId.Trim()))
+                .AsNoTracking().ToListAsync();
+            if (l == null || l.Count == 0)
+            {
+                return;
+            }
+            string openId = l[0].open_id.Trim();
+            if (openId.Trim().Equals(""))
+            {
+                return;
+            }
+            OASent msg = new OASent()
+            {
+                id = 0,
+                MsgType = "text",
+                ToUserName = openId,
+                Content = content
+            };
+            SendServiceMessage(msg);
+        }
+
         [NonAction]
         public string SendServiceMessage(OASent message)
         {
