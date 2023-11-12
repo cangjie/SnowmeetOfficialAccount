@@ -527,6 +527,21 @@ namespace SnowmeetOfficialAccount.Controllers
             return ret;
         }
 
+        [HttpGet]
+        public string GetOAQRCodeUrl(string content)
+        {
+            string jsonStr = "{\"expire_seconds\": 604800, \"action_name\": \"QR_STR_SCENE\", \"action_info\": {\"scene\": {\"scene_str\": \"" + content.Trim() + "\"}}}";
+            string postUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + GetAccessToken().Trim();
+            string ret = Util.GetWebContent(postUrl, jsonStr);
+            OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
+            return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim();
+        }
+
+        protected class OAQRTicket
+        {
+            public string ticket { get; set; } = "";
+        }
+
         protected class UserInfo
         {
             public int subscribe = 0;
