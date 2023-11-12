@@ -46,6 +46,8 @@ namespace SnowmeetOfficialAccount.Controllers
         [HttpGet]
         public async Task SendTextMessage(string unionId, string content)
         {
+            unionId = Util.UrlDecode(unionId);
+            content = Util.UrlDecode(content).Replace("+", " ");
             var l = await _context.user.Where(u => u.union_id.Trim().Equals(unionId.Trim()))
                 .AsNoTracking().ToListAsync();
             if (l == null || l.Count == 0)

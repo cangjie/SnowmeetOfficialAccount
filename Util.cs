@@ -19,6 +19,24 @@ namespace SnowmeetOfficialAccount
         {
             return HttpUtility.UrlEncode(urlStr.Trim().Replace(" ", "+").Replace("'", "\""));
         }
+
+        public static string UrlDecode(string urlStr)
+        {
+            if (urlStr == null || urlStr.Trim().Equals(""))
+            {
+                return "";
+            }
+            try
+            {
+                return HttpUtility.UrlDecode(urlStr).Replace(" ", "+").Trim();
+            }
+            catch
+            {
+                return "";
+            }
+
+        }
+
         public static string GetWebContent(string url)
         {
             try
