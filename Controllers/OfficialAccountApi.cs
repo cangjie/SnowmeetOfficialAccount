@@ -470,6 +470,23 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
                 default:
+                    if (keyArr[0].StartsWith("3"))
+                    {
+                        string skiPassCode = keyArr[0].Substring(1, keyArr[0].Length - 1);
+                        string msg = "雪票：" + skiPassCode.Trim() + "，<a href='http://weixin.snowmeet.top/pages/admin/wechat/card_confirm.aspx?code=" + skiPassCode + "' >点击验证</a>";
+                        OASent reply = new OASent()
+                        {
+                            id = 0,
+                            FromUserName = receiveMsg.ToUserName.Trim(),
+                            ToUserName = receiveMsg.FromUserName.Trim(),
+                            MsgType = "text",
+                            Content = msg.Trim(),
+                            origin_message_id = receiveMsg.id,
+                            is_service = 0
+                        };
+                        ret = reply.GetXmlDocument().InnerXml.Trim();
+                        
+                    }
                     break;
             }
             return ret;
