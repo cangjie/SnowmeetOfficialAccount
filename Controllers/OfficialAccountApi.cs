@@ -395,7 +395,10 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealTextMessage(OARecevie receiveMsg)
         {
             string ret = "success";
-            
+            if (receiveMsg.Content.StartsWith("我要入职"))
+            {
+                ret = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此提交个人信息</a>。";
+            }
             return ret;
         }
 
