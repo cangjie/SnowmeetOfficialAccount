@@ -398,7 +398,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string msg = "";
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
-                msg = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此提交个人信息</a>。";
+                msg = "您目前还不是易龙雪聚员工，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此查看个人信息</a>。";
             }
             if (!msg.Trim().Equals(""))
             {
