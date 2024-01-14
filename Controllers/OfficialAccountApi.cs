@@ -395,10 +395,28 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealTextMessage(OARecevie receiveMsg)
         {
             string ret = "success";
+            string msg = "";
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
-                ret = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此提交个人信息</a>。";
+                msg = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此提交个人信息</a>。";
             }
+            if (!msg.Trim().Equals(""))
+            {
+                OASent reply = new OASent()
+                {
+                    id = 0,
+                    FromUserName = receiveMsg.ToUserName.Trim(),
+                    ToUserName = receiveMsg.FromUserName.Trim(),
+                    MsgType = "text",
+                    Content = msg.Trim(),
+                    origin_message_id = receiveMsg.id,
+                    is_service = 0
+                };
+                ret = reply.GetXmlDocument().InnerXml.Trim();
+                await _context.oASent.AddAsync(reply);
+                await _context.SaveChangesAsync();
+            }
+            
             return ret;
         }
 
