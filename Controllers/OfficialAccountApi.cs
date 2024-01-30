@@ -544,6 +544,10 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
             }
             string message = "欢迎回来，请等待店员开单。";
+            if (keyArr[1].Trim().Equals("maintain"))
+            {
+                message = "请等待店员核验身份。";
+            }
             if (!isMember)
             {
                 message = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/register\" >点此注册</a>。";
