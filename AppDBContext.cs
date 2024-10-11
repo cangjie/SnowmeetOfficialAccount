@@ -11,7 +11,8 @@ namespace SnowmeetOfficialAccount
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Member>().HasMany<MemberSocialAccount>().WithOne().HasForeignKey(m => m.member_id);
+            modelBuilder.Entity<MemberSocialAccount>().HasOne<Member>()
+                .WithMany(m => m.memberSocialAccounts).HasForeignKey(m => m.member_id);
         }
 
         public DbSet<SnowmeetOfficialAccount.Models.EfTest> EfTest { get; set; }

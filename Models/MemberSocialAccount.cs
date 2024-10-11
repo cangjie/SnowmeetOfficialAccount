@@ -16,9 +16,9 @@ namespace SnowmeetOfficialAccount.Models
 
         public string num { get; set; }
 
-        public int valid {get; set;}
+        public int valid { get; set; } = 1;
 
-        public string memo {get; set; }
+        public string memo { get; set; } = "";
 
        // public Member member { get; set; }
 

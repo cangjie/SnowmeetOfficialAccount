@@ -220,7 +220,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             if (validResult != signature)
             {
-                return NoContent(); 
+                //return NoContent(); 
             }
             string body = "";
             var stream = Request.Body;
@@ -370,7 +370,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     valid = 1
                 };
                 member.memberSocialAccounts.Add(msaOpenId);
-                member.memberSocialAccounts.Add(msaUnionId);
+                if (!msaUnionId.num.Trim().Equals(""))
+                {
+                    member.memberSocialAccounts.Add(msaUnionId);
+                }
                 await _context.member.AddAsync(member);
                 await _context.SaveChangesAsync();
             }
@@ -379,16 +382,19 @@ namespace SnowmeetOfficialAccount.Controllers
                 if (unionId.Trim().Equals(""))
                 {
                     UserInfo info = GetUserInfoFromWechat(openId.Trim());
-                    MemberSocialAccount msaUnionId = new MemberSocialAccount()
+                    if (!info.unionid.Trim().Equals(""))
                     {
-                        id = 0,
-                        member_id = memberId,
-                        type = "wechat_unionid",
-                        num = info.unionid.Trim(),
-                        valid = 1
-                    };
-                    await _context.memberSocailAccount.AddAsync(msaUnionId);
-                    await _context.SaveChangesAsync();
+                        MemberSocialAccount msaUnionId = new MemberSocialAccount()
+                        {
+                            id = 0,
+                            member_id = memberId,
+                            type = "wechat_unionid",
+                            num = info.unionid.Trim(),
+                            valid = 1
+                        };
+                        await _context.memberSocailAccount.AddAsync(msaUnionId);
+                        await _context.SaveChangesAsync();
+                    }
                 }
             }
 
