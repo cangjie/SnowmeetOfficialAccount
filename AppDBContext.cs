@@ -11,7 +11,7 @@ namespace SnowmeetOfficialAccount
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.Entity<Member>().HasMany<MemberSocialAccount>().WithOne().HasForeignKey(m => m.member_id);
         }
 
         public DbSet<SnowmeetOfficialAccount.Models.EfTest> EfTest { get; set; }
@@ -25,5 +25,10 @@ namespace SnowmeetOfficialAccount
         public DbSet<MiniUser> miniUser { get; set; }
 
         public DbSet<ShopSaleInteract> shopSaleInteract { get; set; }
+
+        public DbSet<Member> member {get; set;}
+
+        public DbSet<MemberSocialAccount> memberSocailAccount { get; set; }
+        
     }
 }
