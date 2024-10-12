@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static System.Net.WebRequestMethods;
+using System.Collections;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -128,6 +130,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public string GetAccessToken()
         {
+            return "79_z6Q-cZ0EXeoRUOQwxtQ1qtn0N0Dk8zI6XyOB5pxzR2WexXb5WqUjOcglscaiWFMmOhOBRMLvBf_Y1ikbelem58BjJ4EgQWMFVDwJc9vISwJfmXHDO0pWVdKt5YYBDTaAIAGIY";
             string tokenFilePath = $"{Environment.CurrentDirectory}";
             tokenFilePath = tokenFilePath + "/access_token.official_account";
             string token = "";
@@ -605,6 +608,79 @@ namespace SnowmeetOfficialAccount.Controllers
             string ret = Util.GetWebContent(postUrl, jsonStr);
             OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
             return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim();
+        }
+
+
+        [NonAction]
+        public string[] GetSubscribedOpenId()
+        {
+            ArrayList openIdArr = new ArrayList();
+            string token = GetAccessToken();
+            //token = "79_caAgFn0npGT0DIlNzxViDSTRheqtIDN7MWuwJcY41F1YhJz7czKmr0yvxyVDpnaZoV_Sio1xBgM0fujnL1MAZUfH8vWDc-ZQ0lI6pN2M_zOuRUN16oraMwpflxABYJeAEATQB";
+            string nextOpenId = "";
+            string url = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + token;
+            string content = Util.GetWebContent(url);
+            SubscribedOpenIdSet openIdSet = JsonConvert.DeserializeObject<SubscribedOpenIdSet>(content);
+            nextOpenId = openIdSet.next_openid.Trim();
+            for (; openIdSet.data != null && openIdSet.data.openid.Length > 0;)
+            {
+                for (int i = 0; i < openIdSet.data.openid.Length; i++)
+                {
+                    openIdArr.Add(openIdSet.data.openid[i].Trim());
+                }
+                content = Util.GetWebContent(url + "&next_openid=" + openIdSet.next_openid);
+                openIdSet = JsonConvert.DeserializeObject<SubscribedOpenIdSet>(content);
+
+            }
+            string[] ret = new string[openIdArr.Count];
+
+            for (int i = 0; i < openIdArr.Count; i++)
+            {
+                ret[i] = openIdArr[i].ToString();
+            }
+
+            return ret;
+
+        }
+
+        [HttpGet]
+        public async Task GetUserInfo()
+        {
+            string[] openIdArr = GetSubscribedOpenId();
+            string token = GetAccessToken();
+            for (int i = 0; i < openIdArr.Length; i++)
+            {
+                Console.WriteLine(i.ToString());
+                string openId = openIdArr[i].Trim();
+                OAUserInfo savedInfo = await _context.oaUserInfo.FindAsync(openId.Trim());
+                if (savedInfo != null)
+                {
+                    continue;
+                }
+                string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + token + "&openid=" + openId +"&lang=zh_CN";
+                string content = Util.GetWebContent(url);
+                OAUserInfo info = JsonConvert.DeserializeObject<OAUserInfo>(content);
+                info.tagid_list_str = "";
+                await _context.oaUserInfo.AddAsync(info);
+                await _context.SaveChangesAsync();
+                
+                
+                
+            }
+
+        }
+
+        protected class SubscribedOpenIdSet
+        {
+            public int total { get; set; }
+            public int count { get; set; }
+            public DataSet data { get; set; }
+            public string next_openid { get; set; }
+
+            public class DataSet
+            {
+                public string[] openid { get; set; }
+            }
         }
 
         protected class OAQRTicket

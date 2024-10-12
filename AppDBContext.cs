@@ -25,5 +25,7 @@ namespace SnowmeetOfficialAccount
         public DbSet<MiniUser> miniUser { get; set; }
 
         public DbSet<ShopSaleInteract> shopSaleInteract { get; set; }
+
+        public DbSet<OAUserInfo> oaUserInfo { get; set; }
     }
 }
