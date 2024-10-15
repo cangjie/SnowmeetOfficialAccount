@@ -592,6 +592,12 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "recept":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
+                case "wanlong":
+                    if (keyArr[1].Equals("trainer") && keyArr[2].Equals("reg"))
+                    {
+                        ret = await WanlongTrainReg(receiveMsg);
+                    }
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -613,6 +619,31 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
             }
             return ret;
+        }
+
+        [NonAction]
+        public async Task<string> WanlongTrainReg(OARecevie receiveMsg)
+        {
+            string msg = "万龙教练请<a data-miniprogram-appid=\"wx00d9526056641d74\" data-miniprogram-path=\"/pages/admin/admin\" >点击注册</a>安全快乐滑雪系统";
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = msg.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+            
         }
 
         [NonAction]
