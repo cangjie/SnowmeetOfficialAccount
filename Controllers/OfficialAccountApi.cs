@@ -28,12 +28,15 @@ namespace SnowmeetOfficialAccount.Controllers
 
         private readonly Settings _settings;
 
+        private readonly MemberController _memberHelper;
+
         
         public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
             _settings = Settings.GetSettings(_config);
+            _memberHelper = new MemberController(context, config);
         }
 
         [HttpGet]
@@ -653,32 +656,44 @@ namespace SnowmeetOfficialAccount.Controllers
 
 
 
-
+            /*
 
             User user = await _context.user.FindAsync(receiveMsg.FromUserName.Trim());
             if (user == null)
             {
                 return ret;
             }
+            */
+
+            Member member = await _memberHelper.GetMember(receiveMsg.FromUserName, "wechat_oa_openid");
+
+
+
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
 
+            
 
 
+            scan.scaner_oa_open_id = receiveMsg.FromUserName.Trim() ;//user.open_id.Trim();
 
-            scan.scaner_oa_open_id = user.open_id.Trim();
+
+            /*
             if (user.union_id == null || user.union_id.Trim().Equals(""))
             {
                 user = (await SyncUserInfo(user.open_id.Trim()));
             }
-            scan.scaner_union_id = user.union_id.Trim();
+            */
+            scan.scaner_union_id = member.GetNum("wechat_unionid");
 
 
 
 
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+
+            /*
             var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
             bool isMember = false;
             //string cell = "";
@@ -689,6 +704,8 @@ namespace SnowmeetOfficialAccount.Controllers
                     isMember = true;
                 }
             }
+            */
+            bool isMember = member.GetNum("cell").Trim().Equals("") ? false : true;
             string message = "欢迎回来，请等待店员开单。";
             if (keyArr[1].Trim().Equals("maintain"))
             {

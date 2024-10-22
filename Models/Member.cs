@@ -19,6 +19,37 @@ namespace SnowmeetOfficialAccount.Models
         public int is_manager { get; set;} = 0;
         public int is_admin { get; set; } = 0;
 
+        public string GetNum(string type)
+        {
+            string openId = "";
+            foreach (MemberSocialAccount msa in memberSocialAccounts)
+            {
+                if (msa.type.Trim().Equals(type.Trim()))
+                {
+                    openId = msa.num.Trim();
+                    break;
+                }
+            }
+            return openId;
+        }
+
+        public string oaOpenId
+        {
+            get
+            {
+                string openId = "";
+                foreach (MemberSocialAccount msa in memberSocialAccounts)
+                {
+                    if (msa.type.Trim().Equals("wechat_oa_openid"))
+                    {
+                        openId = msa.num.Trim();
+                        break;
+                    }
+                }
+                return openId;
+            }
+        }
+
         
         public ICollection<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
         
