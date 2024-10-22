@@ -480,6 +480,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealMessage(OARecevie receiveMsg)
         {
+            //await SyncMemberInfo(receiveMsg.FromUserName.Trim());
             string ret = "success";
             switch (receiveMsg.MsgType.Trim().ToLower())
             {
