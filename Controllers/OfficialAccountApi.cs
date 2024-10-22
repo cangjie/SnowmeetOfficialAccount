@@ -208,7 +208,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
         {
-            string ret = "success";
+            string ret = "success1010";
             string[] validStringArr = new string[] { _settings.token.Trim(), timestamp.Trim(), nonce.Trim() };
             Array.Sort(validStringArr);
             string validString = String.Join("", validStringArr);
@@ -500,7 +500,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealTextMessage(OARecevie receiveMsg)
         {
-            string ret = "success";
+            string ret = "success1111";
             string msg = "";
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
@@ -741,7 +741,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 miniAppPath = "/pages/payment/pay_recept?id=" + id.ToString();
             }
             message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
-            string ret = "success";
+            string ret = "success999";
             OASent reply = new OASent()
             {
                 id = 0,
