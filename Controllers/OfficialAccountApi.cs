@@ -208,7 +208,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
         {
-            string ret = "success1010";
+            string ret = "success";
             string[] validStringArr = new string[] { _settings.token.Trim(), timestamp.Trim(), nonce.Trim() };
             Array.Sort(validStringArr);
             string validString = String.Join("", validStringArr);
@@ -300,9 +300,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.SaveChangesAsync();
                 try
                 {
-                    await SyncMemberInfo(msg.FromUserName.Trim());
-                    await SyncUserInfo(msg.FromUserName.Trim());
-                    ret = "suc";
+                    //await SyncMemberInfo(msg.FromUserName.Trim());
+                    //await SyncUserInfo(msg.FromUserName.Trim());
+                    //ret = "suc";
                 }
                 catch(Exception err)
                 {
@@ -482,7 +482,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealMessage(OARecevie receiveMsg)
         {
             //await SyncMemberInfo(receiveMsg.FromUserName.Trim());
-            string ret = "success111";
+            string ret = "success";
             switch (receiveMsg.MsgType.Trim().ToLower())
             {
                 case "text":
@@ -501,7 +501,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealTextMessage(OARecevie receiveMsg)
         {
-            string ret = "success1111";
+            string ret = "success";
             string msg = "";
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
@@ -530,7 +530,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealEventMessage(OARecevie receiveMsg)
         {
-            string ret = "success222";
+            string ret = "success";
 
             switch (receiveMsg.Event.ToLower().Trim())
             {
@@ -551,14 +551,14 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealCommonMessage(OARecevie receiveMsg)
         {
-            string ret = "success333";
+            string ret = "success";
             return ret;
         }
 
         [NonAction]
         public async Task<string> DealScanMessage(OARecevie receiveMsg)
         {
-            string ret = "success444";
+            string ret = "success";
             ret = await DealEventKeyAction(receiveMsg, receiveMsg.EventKey.ToLower());
             return ret;
         }
@@ -566,7 +566,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealSubscribeMessage(OARecevie receiveMsg)
         {
-            string ret = "success555";
+            string ret = "success";
 
             if (receiveMsg.EventKey.ToLower().StartsWith("qrscene"))
             {
@@ -583,7 +583,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealEventKeyAction(OARecevie receiveMsg, string key)
         {
-            string ret = "success666";
+            string ret = "success";
             if (receiveMsg.EventKey.IndexOf(key) < 0)
             {
                 return ret;
@@ -630,7 +630,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> WanlongTrainReg(OARecevie receiveMsg)
         {
             string msg = "万龙教练请<a data-miniprogram-appid=\"wx00d9526056641d74\" data-miniprogram-path=\"/pages/admin/admin\" >点击注册</a>安全快乐滑雪系统";
-            string ret = "success777";
+            string ret = "success";
             OASent reply = new OASent()
             {
                 id = 0,
@@ -654,7 +654,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
-            string ret = "success888";
+            string ret = "success";
 
 
 
@@ -742,7 +742,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 miniAppPath = "/pages/payment/pay_recept?id=" + id.ToString();
             }
             message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
-            string ret = "success999";
+            string ret = "success";
             OASent reply = new OASent()
             {
                 id = 0,
