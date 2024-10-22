@@ -302,10 +302,11 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     await SyncMemberInfo(msg.FromUserName.Trim());
                     await SyncUserInfo(msg.FromUserName.Trim());
+                    ret = "suc";
                 }
-                catch
-                { 
-                
+                catch(Exception err)
+                {
+                    ret = err.ToString().Trim();
                 }
                 ret = await DealMessage(msg);
 
