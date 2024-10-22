@@ -529,7 +529,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealEventMessage(OARecevie receiveMsg)
         {
-            string ret = "success";
+            string ret = "success222";
 
             switch (receiveMsg.Event.ToLower().Trim())
             {
@@ -550,14 +550,14 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealCommonMessage(OARecevie receiveMsg)
         {
-            string ret = "success";
+            string ret = "success333";
             return ret;
         }
 
         [NonAction]
         public async Task<string> DealScanMessage(OARecevie receiveMsg)
         {
-            string ret = "success";
+            string ret = "success444";
             ret = await DealEventKeyAction(receiveMsg, receiveMsg.EventKey.ToLower());
             return ret;
         }
@@ -565,7 +565,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealSubscribeMessage(OARecevie receiveMsg)
         {
-            string ret = "success";
+            string ret = "success555";
 
             if (receiveMsg.EventKey.ToLower().StartsWith("qrscene"))
             {
@@ -582,7 +582,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealEventKeyAction(OARecevie receiveMsg, string key)
         {
-            string ret = "success";
+            string ret = "success666";
             if (receiveMsg.EventKey.IndexOf(key) < 0)
             {
                 return ret;
@@ -629,7 +629,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> WanlongTrainReg(OARecevie receiveMsg)
         {
             string msg = "万龙教练请<a data-miniprogram-appid=\"wx00d9526056641d74\" data-miniprogram-path=\"/pages/admin/admin\" >点击注册</a>安全快乐滑雪系统";
-            string ret = "success";
+            string ret = "success777";
             OASent reply = new OASent()
             {
                 id = 0,
@@ -653,7 +653,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
-            string ret = "success";
+            string ret = "success888";
 
 
 
