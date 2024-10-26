@@ -223,7 +223,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             if (validResult != signature)
             {
-                return NoContent(); 
+                //return NoContent(); 
             }
             string body = "";
             var stream = Request.Body;
@@ -248,7 +248,11 @@ namespace SnowmeetOfficialAccount.Controllers
                     path = path + "wechat_post_" + dateStr + ".txt";
                     using (StreamWriter fw = new StreamWriter(path, true))
                     {
-                        fw.WriteLine(body.Trim());
+                        await fw.WriteLineAsync(signature);
+                        await fw.WriteLineAsync(timestamp);
+                        await fw.WriteLineAsync(nonce);
+                        await fw.WriteLineAsync(body.Trim());
+                        await fw.WriteLineAsync("");
                         fw.Close();
                     }
                 }
@@ -296,6 +300,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.SaveChangesAsync();
                 try
                 {
+                    await SyncMemberInfo(msg.FromUserName.Trim());
                     await SyncUserInfo(msg.FromUserName.Trim());
                 }
                 catch
@@ -313,6 +318,103 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
         }
+
+        [HttpGet]
+        public async Task SyncMemberInfo(string openId)
+        {
+            var msaList = await _context.memberSocailAccount
+                .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId)))
+                .AsNoTracking().ToListAsync();
+            int memberId = 0;
+            string unionId = "";
+            if (msaList != null && msaList.Count > 0)
+            {
+                memberId = msaList[0].member_id;
+            }
+            else
+            {
+                for(int i = 0; i < msaList.Count; i++)
+                {
+                    if (msaList[i].type.Trim().Equals("wechat_unionid"))
+                    {
+                        unionId = msaList[i].num.Trim();
+                        break;
+                    }
+                }
+            }
+
+            
+
+
+            if (memberId == 0)
+            {
+                Member member = new Member()
+                {
+                    id = 0,
+                };
+                
+                MemberSocialAccount msaOpenId = new MemberSocialAccount()
+                {
+                    id = 0,
+                    member_id = 0,
+                    type = "wechat_oa_openid",
+                    num = openId.Trim(),
+                    valid = 1
+                };
+
+                UserInfo info = GetUserInfoFromWechat(openId.Trim());
+
+                MemberSocialAccount msaUnionId = new MemberSocialAccount()
+                {
+                    id = 0,
+                    member_id = 0,
+                    type = "wechat_unionid",
+                    num = info.unionid.Trim(),
+                    valid = 1
+                };
+                member.memberSocialAccounts.Add(msaOpenId);
+                if (!msaUnionId.num.Trim().Equals(""))
+                {
+                    member.memberSocialAccounts.Add(msaUnionId);
+                }
+                await _context.member.AddAsync(member);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                if (unionId.Trim().Equals(""))
+                {
+                    UserInfo info = GetUserInfoFromWechat(openId.Trim());
+                    if (!info.unionid.Trim().Equals(""))
+                    {
+                        MemberSocialAccount msaUnionId = new MemberSocialAccount()
+                        {
+                            id = 0,
+                            member_id = memberId,
+                            type = "wechat_unionid",
+                            num = info.unionid.Trim(),
+                            valid = 1
+                        };
+                        await _context.memberSocailAccount.AddAsync(msaUnionId);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+        }
+
+
+        [NonAction]
+        public UserInfo GetUserInfoFromWechat(string openId)
+        {
+            string accessToken = GetAccessToken();
+            string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken.Trim()
+                    + "&openid=" + openId.Trim() + "&lang=zh_CN";
+            string ret = Util.GetWebContent(url);
+            UserInfo info = JsonConvert.DeserializeObject<UserInfo>(ret);
+            return info;
+        }
+       
 
         [HttpGet]
         public async Task<User> SyncUserInfo(string openId)
@@ -520,6 +622,11 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
             string ret = "success";
+
+
+
+
+
             User user = await _context.user.FindAsync(receiveMsg.FromUserName.Trim());
             if (user == null)
             {
@@ -528,12 +635,20 @@ namespace SnowmeetOfficialAccount.Controllers
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
+
+
+
+
             scan.scaner_oa_open_id = user.open_id.Trim();
             if (user.union_id == null || user.union_id.Trim().Equals(""))
             {
                 user = (await SyncUserInfo(user.open_id.Trim()));
             }
             scan.scaner_union_id = user.union_id.Trim();
+
+
+
+
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
@@ -688,7 +803,7 @@ namespace SnowmeetOfficialAccount.Controllers
             public string ticket { get; set; } = "";
         }
 
-        protected class UserInfo
+        public class UserInfo
         {
             public int subscribe = 0;
             public string openid = "";
