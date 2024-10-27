@@ -300,7 +300,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.SaveChangesAsync();
                 try
                 {
-                    //await SyncMemberInfo(msg.FromUserName.Trim());
+                    await SyncMemberInfo(msg.FromUserName.Trim());
                     //await SyncUserInfo(msg.FromUserName.Trim());
                     //ret = "suc";
                 }
