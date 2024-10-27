@@ -332,6 +332,10 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 memberId = msaList[0].member_id;
             }
+
+            
+
+            /*
             else
             {
                 for(int i = 0; i < msaList.Count; i++)
@@ -343,7 +347,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                 }
             }
-
+            */
             
 
 
@@ -383,7 +387,14 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             else
             {
-                if (unionId.Trim().Equals(""))
+                var memberList = await _context.member.Include(m => m.memberSocialAccounts)
+                .Where(m => m.id == memberId).AsNoTracking().ToListAsync();
+                if (memberList == null || memberList.Count == 0)
+                {
+                    return;
+                }
+                unionId = memberList[0].wechatUnionId.Trim();
+                if (unionId == null || unionId.Trim().Equals(""))
                 {
                     UserInfo info = GetUserInfoFromWechat(openId.Trim());
                     if (!info.unionid.Trim().Equals(""))
