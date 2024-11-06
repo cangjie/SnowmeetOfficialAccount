@@ -614,6 +614,12 @@ namespace SnowmeetOfficialAccount.Controllers
                         ret = await WanlongTrainReg(receiveMsg);
                     }
                     break;
+                case "snowmeet":
+                    if (keyArr[1].Equals("staff") && keyArr[2].Equals("reg"))
+                    {
+                        ret = await SnowmeetStaffReg(receiveMsg);
+                    }
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -660,6 +666,31 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
             
+        }
+
+        [NonAction]
+        public async Task<string> SnowmeetStaffReg(OARecevie receiveMsg)
+        {
+            string msg = "易龙雪聚新员请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/admin/staff_reg\" >点击注册</a>后，联系管理员开通权限。";
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = msg.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+
         }
 
         [NonAction]
