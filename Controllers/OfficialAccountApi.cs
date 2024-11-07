@@ -333,6 +333,24 @@ namespace SnowmeetOfficialAccount.Controllers
                 memberId = msaList[0].member_id;
             }
 
+            if (memberId == 0)
+            {
+                UserInfo info = GetUserInfoFromWechat(openId.Trim());
+                unionId = info.unionid.Trim();
+                if (unionId != null && unionId.Trim().Equals(""))
+                {
+                    msaList = await _context.memberSocailAccount
+                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(openId)))
+                        .AsNoTracking().ToListAsync();
+                    if (msaList != null && msaList.Count > 0)
+                    {
+                        memberId = msaList[0].member_id;
+                    }
+
+                }
+                
+            }
+
             
 
             /*
