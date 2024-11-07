@@ -337,7 +337,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 UserInfo info = GetUserInfoFromWechat(openId.Trim());
                 unionId = info.unionid.Trim();
-                if (unionId != null && unionId.Trim().Equals(""))
+                if (unionId != null && !unionId.Trim().Equals(""))
                 {
                     msaList = await _context.memberSocailAccount
                         .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(openId)))
