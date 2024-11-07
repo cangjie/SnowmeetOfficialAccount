@@ -415,9 +415,10 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     return;
                 }
-                unionId = memberList[0].wechatUnionId.Trim();
-                if (unionId == null || unionId.Trim().Equals(""))
+                
+                if (memberList[0].wechatUnionId == null || memberList[0].wechatUnionId.Trim().Equals(""))
                 {
+                    
                     UserInfo info = GetUserInfoFromWechat(openId.Trim());
                     if (!info.unionid.Trim().Equals(""))
                     {
@@ -455,7 +456,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public UserInfo GetUserInfoFromWechat(string openId)
         {
             string accessToken = GetAccessToken();
-            //accessToken = "86_l5pwLyxZyNxM-OIRPJnjxuFd57Q5tsD5BExtCfAZXMuq8ioJLyds_YbjEsknJjGd6LFOPkImk2kOx18cPmly1LMh6fCo5v2ZuKfInUhcSsTSM8bwzyOSP6jgHMsFGEeABAYZX";
+            //accessToken = "86_ZQ8BBf0416xcMbDq_cEmNHj3F0OQGzpkqJE5wfbhDM1yKi3bkOn6-5X-v3o5VBIHfW07FIfCHOh4XeqL4VW8SemnheOyld6hmOuhyAmyb2c4q0ao0QPGK8ORLX0WSAdACASOW";
             string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken.Trim()
                     + "&openid=" + openId.Trim() + "&lang=zh_CN";
             string ret = Util.GetWebContent(url);
