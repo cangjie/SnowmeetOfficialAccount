@@ -340,7 +340,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 if (unionId != null && !unionId.Trim().Equals(""))
                 {
                     msaList = await _context.memberSocailAccount
-                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(openId)))
+                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(unionId)))
                         .AsNoTracking().ToListAsync();
                     if (msaList != null && msaList.Count > 0)
                     {
@@ -400,6 +400,10 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     member.memberSocialAccounts.Add(msaUnionId);
                 }
+
+
+
+
                 await _context.member.AddAsync(member);
                 await _context.SaveChangesAsync();
             }
@@ -438,6 +442,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public UserInfo GetUserInfoFromWechat(string openId)
         {
             string accessToken = GetAccessToken();
+            accessToken = "86_l5pwLyxZyNxM-OIRPJnjxuFd57Q5tsD5BExtCfAZXMuq8ioJLyds_YbjEsknJjGd6LFOPkImk2kOx18cPmly1LMh6fCo5v2ZuKfInUhcSsTSM8bwzyOSP6jgHMsFGEeABAYZX";
             string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken.Trim()
                     + "&openid=" + openId.Trim() + "&lang=zh_CN";
             string ret = Util.GetWebContent(url);
