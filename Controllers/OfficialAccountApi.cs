@@ -643,8 +643,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
                 case "recept":
+                case "shop":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
+                
                 case "wanlong":
                     if (keyArr[1].Equals("trainer") && keyArr[2].Equals("reg"))
                     {
