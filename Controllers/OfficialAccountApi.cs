@@ -303,7 +303,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.SaveChangesAsync();
                 try
                 {
-                    //await SyncMemberInfo(msg.FromUserName.Trim());
+                    await SyncMemberInfo(msg.FromUserName.Trim());
                     //await SyncUserInfo(msg.FromUserName.Trim());
                     //ret = "suc";
                 }
@@ -335,6 +335,28 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 memberId = msaList[0].member_id;
             }
+
+            if (memberId == 0)
+            {
+                UserInfo info = GetUserInfoFromWechat(openId.Trim());
+                unionId = info.unionid.Trim();
+                if (unionId != null && !unionId.Trim().Equals(""))
+                {
+                    msaList = await _context.memberSocailAccount
+                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(unionId)))
+                        .AsNoTracking().ToListAsync();
+                    if (msaList != null && msaList.Count > 0)
+                    {
+                        memberId = msaList[0].member_id;
+                    }
+
+                }
+                
+            }
+
+            
+
+            /*
             else
             {
                 for(int i = 0; i < msaList.Count; i++)
@@ -346,7 +368,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                 }
             }
-
+            */
             
 
 
@@ -381,13 +403,25 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     member.memberSocialAccounts.Add(msaUnionId);
                 }
+
+
+
+
                 await _context.member.AddAsync(member);
                 await _context.SaveChangesAsync();
             }
             else
             {
-                if (unionId.Trim().Equals(""))
+                var memberList = await _context.member.Include(m => m.memberSocialAccounts)
+                .Where(m => m.id == memberId).AsNoTracking().ToListAsync();
+                if (memberList == null || memberList.Count == 0)
                 {
+                    return;
+                }
+                
+                if (memberList[0].wechatUnionId == null || memberList[0].wechatUnionId.Trim().Equals(""))
+                {
+                    
                     UserInfo info = GetUserInfoFromWechat(openId.Trim());
                     if (!info.unionid.Trim().Equals(""))
                     {
@@ -403,6 +437,19 @@ namespace SnowmeetOfficialAccount.Controllers
                         await _context.SaveChangesAsync();
                     }
                 }
+                if (memberList[0].oaOpenId == null || memberList[0].oaOpenId.Trim().Equals(""))
+                {
+                    MemberSocialAccount msaOaOpenId = new MemberSocialAccount()
+                    {
+                        id = 0,
+                        member_id = memberId,
+                        type = "wechat_oa_openid",
+                        num = openId.Trim(),
+                        valid = 1
+                    };
+                    await _context.memberSocailAccount.AddAsync(msaOaOpenId);
+                    await _context.SaveChangesAsync();
+                }
             }
 
         }
@@ -412,6 +459,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public UserInfo GetUserInfoFromWechat(string openId)
         {
             string accessToken = GetAccessToken();
+            //accessToken = "86_ZQ8BBf0416xcMbDq_cEmNHj3F0OQGzpkqJE5wfbhDM1yKi3bkOn6-5X-v3o5VBIHfW07FIfCHOh4XeqL4VW8SemnheOyld6hmOuhyAmyb2c4q0ao0QPGK8ORLX0WSAdACASOW";
             string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + accessToken.Trim()
                     + "&openid=" + openId.Trim() + "&lang=zh_CN";
             string ret = Util.GetWebContent(url);
@@ -598,12 +646,20 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
                 case "recept":
+                case "shop":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
+                
                 case "wanlong":
                     if (keyArr[1].Equals("trainer") && keyArr[2].Equals("reg"))
                     {
                         ret = await WanlongTrainReg(receiveMsg);
+                    }
+                    break;
+                case "snowmeet":
+                    if (keyArr[1].Equals("staff") && keyArr[2].Equals("reg"))
+                    {
+                        ret = await SnowmeetStaffReg(receiveMsg);
                     }
                     break;
                 default:
@@ -652,6 +708,31 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
             
+        }
+
+        [NonAction]
+        public async Task<string> SnowmeetStaffReg(OARecevie receiveMsg)
+        {
+            string msg = "易龙雪聚新员请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/admin/staff_reg\" >点击注册</a>后，联系管理员开通权限。";
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = msg.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+
         }
 
         [NonAction]
