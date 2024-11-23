@@ -31,6 +31,8 @@ namespace SnowmeetOfficialAccount.Controllers
         private readonly MemberController _memberHelper;
 
         
+
+        
         public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
@@ -659,6 +661,12 @@ namespace SnowmeetOfficialAccount.Controllers
                         ret = await SnowmeetStaffReg(receiveMsg);
                     }
                     break;
+                case "oper":
+                    if (keyArr[1].Trim().Equals("ticket"))
+                    {
+                        ret = await ScanTicket(receiveMsg);
+                    }
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -679,6 +687,78 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> ScanTicket(OARecevie receiveMsg)
+        {
+            string[] keyArr = receiveMsg.EventKey.Trim().Split('_');
+            string code = keyArr[keyArr.Length - 1].Trim();
+            string openId = receiveMsg.FromUserName.Trim();
+            Member member = await _memberHelper.GetMember(openId, "wechat_oa_openid");
+            Ticket ticket = await _context.ticket.FindAsync(code);
+            if (ticket == null)
+            {
+                return "success";
+            }
+            string content = "";
+            if (ticket.open_id.Trim().Equals(""))
+            {
+                content = "绑定此券，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_bind?ticketCode=" + ticket.Code.Trim()
+                + "\" href=\"#\" >点击此处</a>进入小程序操作。";
+
+                if (member.is_admin == 1 || member.is_manager == 1 || member.is_staff == 1)
+                {
+                    if (!ticket.miniapp_recept_path.Trim().Equals(""))
+                    {
+                        content = content + "      如果是客人出示并要使用此" + ticket.name.Trim() + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                        + ticket.miniapp_recept_path.Trim() + "?ticketCode=" + ticket.code.Trim() + "\" href=\"#\"  >进入此处</a>为其操作。";
+                    }
+                    else
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，具体内容：" + ticket.memo.Trim()
+                            + "请<a  href=\"http://weixin.snowmeet.top/pages/admin/wechat/use_ticket.aspx?code=" + ticket.code.Trim() + "\"  >进入此处</a>为其核销。";
+                    }
+                }
+            }
+            else
+            {
+                if (member.is_admin == 1 || member.is_manager == 1 || member.is_staff == 1)
+                {
+                    if (!ticket.miniapp_recept_path.Trim().Equals(""))
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                            + ticket.miniapp_recept_path.ToString() + "?ticketCode=" + ticket.code.Trim() + "\" href=\"#\"  >进入此处</a>为其操作。";
+                    }
+                    else
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，具体内容：" + ticket.memo.Trim()
+                            + "请<a  href=\"http://weixin.snowmeet.top/pages/admin/wechat/use_ticket.aspx?code=" + ticket.code.Trim() + "\"  >进入此处</a>为其核销。";
+                    }
+
+                }
+                else
+                {
+                    content = "此券已经被其他用户添加至其个人账户。";
+                }
+            }
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
             return ret;
         }
 
