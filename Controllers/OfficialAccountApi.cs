@@ -705,7 +705,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string content = "";
             if (ticket.open_id.Trim().Equals(""))
             {
-                content = "绑定此券，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_bind?ticketCode=" + ticket.Code.Trim()
+                content = "绑定此券，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_bind?ticketCode=" + ticket.code.Trim()
                 + "\" href=\"#\" >点击此处</a>进入小程序操作。";
 
                 if (member.is_admin == 1 || member.is_manager == 1 || member.is_staff == 1)
