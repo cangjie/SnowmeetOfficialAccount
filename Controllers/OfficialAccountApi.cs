@@ -710,7 +710,7 @@ namespace SnowmeetOfficialAccount.Controllers
             bool haveJoined = false;
             if (member.wechatMiniOpenId == null || member.wechatMiniOpenId.Trim().Equals(""))
             {
-                haveJoined = true;
+                haveJoined = false;
             }
             else
             {
