@@ -553,6 +553,7 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             string ret = "success";
             string msg = "";
+            receiveMsg.Content = receiveMsg.EventKey.ToLower();
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
                 msg = "您目前还不是易龙雪聚员工，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此查看个人信息</a>。";
@@ -581,7 +582,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealEventMessage(OARecevie receiveMsg)
         {
             string ret = "success";
-
+            receiveMsg.Content = receiveMsg.EventKey.ToLower();
             switch (receiveMsg.Event.ToLower().Trim())
             {
                 case "scan":
@@ -634,6 +635,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealEventKeyAction(OARecevie receiveMsg, string key)
         {
             string ret = "success";
+            receiveMsg.EventKey = receiveMsg.EventKey.ToLower();
             if (receiveMsg.EventKey.IndexOf(key) < 0)
             {
                 return ret;
@@ -667,7 +669,7 @@ namespace SnowmeetOfficialAccount.Controllers
                         ret = await ScanTicket(receiveMsg);
                     }
                     break;
-                case "TicketActivity":
+                case "ticketactivity":
                     ret = await TicketActivity(receiveMsg);
                     break;
                 default:
