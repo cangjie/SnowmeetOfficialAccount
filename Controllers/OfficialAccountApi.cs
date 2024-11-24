@@ -667,6 +667,9 @@ namespace SnowmeetOfficialAccount.Controllers
                         ret = await ScanTicket(receiveMsg);
                     }
                     break;
+                case "TicketActivity":
+                    ret = await TicketActivity(receiveMsg);
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -688,6 +691,66 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
             }
             return ret;
+        }
+
+        [NonAction]
+        public async Task<string> TicketActivity(OARecevie receiveMsg)
+        {
+            string[] eventArr = receiveMsg.EventKey.Split('_');
+            int ticketTemplateId = int.Parse(eventArr[eventArr.Length - 1]);
+            string source = eventArr[eventArr.Length - 2].Trim();
+
+            Member member = await _memberHelper.GetMember(receiveMsg.FromUserName, "wechat_oa_openId");
+            if (member == null)
+            {
+                return "success";
+            }
+            bool haveJoined = false;
+            if (member.wechatMiniOpenId == null || member.wechatMiniOpenId.Trim().Equals(""))
+            {
+                haveJoined = true;
+            }
+            else
+            {
+                var ticketList = await _context.ticket
+                    .Where(t => t.template_id == ticketTemplateId
+                    && t.open_id.Trim().Equals(member.wechatMiniOpenId.Trim()))
+                    .AsNoTracking().ToListAsync();
+                if (ticketList != null && ticketList.Count > 0)
+                {
+                    haveJoined = true;
+                }
+
+            }
+            string content = "";
+            if (!haveJoined)
+            {
+                TicketTemplate tt = await _context.ticketTemplate.FindAsync(ticketTemplateId);
+                content = "感谢您的关注，易龙雪聚" + tt.name + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                   + tt.miniapp_recept_path + "&source=" + Util.UrlEncode(source) + "\" >" + "点击此链接" + "</a>领取。";
+            }
+            else
+            {
+                content = "感谢您对易龙雪聚的支持与关注，此项活动您无需重复参加。";
+            }
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+            //return "";
         }
 
         [NonAction]
