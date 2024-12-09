@@ -33,6 +33,8 @@ namespace SnowmeetOfficialAccount.Controllers
         private readonly MemberController _memberHelper;
 
         
+
+        
         public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
@@ -554,6 +556,7 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             string ret = "success";
             string msg = "";
+            receiveMsg.Content = receiveMsg.EventKey.ToLower();
             if (receiveMsg.Content.StartsWith("我要入职"))
             {
                 msg = "您目前还不是易龙雪聚员工，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/staff_check_in\" >点此查看个人信息</a>。";
@@ -582,7 +585,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealEventMessage(OARecevie receiveMsg)
         {
             string ret = "success";
-
+            receiveMsg.Content = receiveMsg.EventKey.ToLower();
             switch (receiveMsg.Event.ToLower().Trim())
             {
                 case "scan":
@@ -635,6 +638,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> DealEventKeyAction(OARecevie receiveMsg, string key)
         {
             string ret = "success";
+            receiveMsg.EventKey = receiveMsg.EventKey.ToLower();
             if (receiveMsg.EventKey.IndexOf(key) < 0)
             {
                 return ret;
@@ -662,6 +666,15 @@ namespace SnowmeetOfficialAccount.Controllers
                         ret = await SnowmeetStaffReg(receiveMsg);
                     }
                     break;
+                case "oper":
+                    if (keyArr[1].Trim().Equals("ticket"))
+                    {
+                        ret = await ScanTicket(receiveMsg);
+                    }
+                    break;
+                case "ticketactivity":
+                    ret = await TicketActivity(receiveMsg);
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -682,6 +695,138 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> TicketActivity(OARecevie receiveMsg)
+        {
+            string[] eventArr = receiveMsg.EventKey.Split('_');
+            int ticketTemplateId = int.Parse(eventArr[eventArr.Length - 1]);
+            string source = eventArr[eventArr.Length - 2].Trim();
+
+            Member member = await _memberHelper.GetMember(receiveMsg.FromUserName, "wechat_oa_openId");
+            if (member == null)
+            {
+                return "success";
+            }
+            bool haveJoined = false;
+            if (member.wechatMiniOpenId == null || member.wechatMiniOpenId.Trim().Equals(""))
+            {
+                haveJoined = false;
+            }
+            else
+            {
+                var ticketList = await _context.ticket
+                    .Where(t => t.template_id == ticketTemplateId
+                    && t.open_id.Trim().Equals(member.wechatMiniOpenId.Trim()))
+                    .AsNoTracking().ToListAsync();
+                if (ticketList != null && ticketList.Count > 0)
+                {
+                    haveJoined = true;
+                }
+
+            }
+            string content = "";
+            if (!haveJoined)
+            {
+                TicketTemplate tt = await _context.ticketTemplate.FindAsync(ticketTemplateId);
+                content = "感谢您的关注，易龙雪聚" + tt.name + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                   + tt.miniapp_recept_path + "&source=" + Util.UrlEncode(source) + "\" >" + "点击此链接" + "</a>领取。";
+            }
+            else
+            {
+                content = "感谢您对易龙雪聚的支持与关注，此项活动您无需重复参加。";
+            }
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+            //return "";
+        }
+
+        [NonAction]
+        public async Task<string> ScanTicket(OARecevie receiveMsg)
+        {
+            string[] keyArr = receiveMsg.EventKey.Trim().Split('_');
+            string code = keyArr[keyArr.Length - 1].Trim();
+            string openId = receiveMsg.FromUserName.Trim();
+            Member member = await _memberHelper.GetMember(openId, "wechat_oa_openid");
+            Ticket ticket = await _context.ticket.FindAsync(code);
+            if (ticket == null)
+            {
+                return "success";
+            }
+            string content = "";
+            if (ticket.open_id.Trim().Equals(""))
+            {
+                content = "绑定此券，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_bind?ticketCode=" + ticket.code.Trim()
+                + "\" href=\"#\" >点击此处</a>进入小程序操作。";
+
+                if (member.is_admin == 1 || member.is_manager == 1 || member.is_staff == 1)
+                {
+                    if (!ticket.miniapp_recept_path.Trim().Equals(""))
+                    {
+                        content = content + "      如果是客人出示并要使用此" + ticket.name.Trim() + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                        + ticket.miniapp_recept_path.Trim() + "?ticketCode=" + ticket.code.Trim() + "\" href=\"#\"  >进入此处</a>为其操作。";
+                    }
+                    else
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，具体内容：" + ticket.memo.Trim()
+                            + "请<a  href=\"http://weixin.snowmeet.top/pages/admin/wechat/use_ticket.aspx?code=" + ticket.code.Trim() + "\"  >进入此处</a>为其核销。";
+                    }
+                }
+            }
+            else
+            {
+                if (member.is_admin == 1 || member.is_manager == 1 || member.is_staff == 1)
+                {
+                    if (!ticket.miniapp_recept_path.Trim().Equals(""))
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\""
+                            + ticket.miniapp_recept_path.ToString() + "?ticketCode=" + ticket.code.Trim() + "\" href=\"#\"  >进入此处</a>为其操作。";
+                    }
+                    else
+                    {
+                        content = "客人使用此" + ticket.name.Trim() + "，具体内容：" + ticket.memo.Trim()
+                            + "请<a  href=\"http://weixin.snowmeet.top/pages/admin/wechat/use_ticket.aspx?code=" + ticket.code.Trim() + "\"  >进入此处</a>为其核销。";
+                    }
+
+                }
+                else
+                {
+                    content = "此券已经被其他用户添加至其个人账户。";
+                }
+            }
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
             return ret;
         }
 

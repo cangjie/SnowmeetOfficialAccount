@@ -31,6 +31,10 @@ namespace SnowmeetOfficialAccount
         public DbSet<Member> member {get; set;}
 
         public DbSet<MemberSocialAccount> memberSocailAccount { get; set; }
+
+        public DbSet<Ticket> ticket { get; set; }
+
+        public DbSet<TicketTemplate> ticketTemplate { get; set; }
         
     }
 }
