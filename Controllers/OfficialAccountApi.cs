@@ -651,6 +651,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
                 case "recept":
                 case "shop":
+                case "nanshanskipass":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
                 
@@ -936,16 +937,37 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
             }
             */
+            string message = "";
             bool isMember = member.GetNum("cell").Trim().Equals("") ? false : true;
-            string message = "欢迎回来，请等待店员开单。";
-            if (keyArr[1].Trim().Equals("maintain"))
+            switch(scan.scan_type.Trim())
             {
-                message = "请等待店员核验身份。";
+                case "nanshanskipass":
+                    if (!isMember)
+                    {
+                        message = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/register\" >点此注册</a>。";
+                    }
+                    else
+                    {
+                        message = "请稍后，等待店员取票。";
+                    }
+                break;
+                default:
+                    message = "欢迎回来，请等待店员开单。";
+                    if (keyArr[1].Trim().Equals("maintain"))
+                    {
+                        message = "请等待店员核验身份。";
+                    }
+                    if (!isMember)
+                    {
+                        message = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/register\" >点此注册</a>。";
+                    }
+                    break;
             }
-            if (!isMember)
-            {
-                message = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/register\" >点此注册</a>。";
-            }
+
+            
+
+
+
             OASent reply = new OASent()
             {
                 id = 0,
