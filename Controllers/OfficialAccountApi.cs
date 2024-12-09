@@ -135,7 +135,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public string GetAccessToken()
         {
-            return "79_z6Q-cZ0EXeoRUOQwxtQ1qtn0N0Dk8zI6XyOB5pxzR2WexXb5WqUjOcglscaiWFMmOhOBRMLvBf_Y1ikbelem58BjJ4EgQWMFVDwJc9vISwJfmXHDO0pWVdKt5YYBDTaAIAGIY";
+            //return "79_z6Q-cZ0EXeoRUOQwxtQ1qtn0N0Dk8zI6XyOB5pxzR2WexXb5WqUjOcglscaiWFMmOhOBRMLvBf_Y1ikbelem58BjJ4EgQWMFVDwJc9vISwJfmXHDO0pWVdKt5YYBDTaAIAGIY";
             string tokenFilePath = $"{Environment.CurrentDirectory}";
             tokenFilePath = tokenFilePath + "/access_token.official_account";
             string token = "";
