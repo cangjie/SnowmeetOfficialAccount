@@ -713,7 +713,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> SnowmeetStaffReg(OARecevie receiveMsg)
         {
-            string msg = "易龙雪聚新员请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/admin/staff_reg\" >点击注册</a>后，联系管理员开通权限。";
+            string msg = "易龙雪聚新员工请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/admin/staff_reg\" >点击注册</a>后，联系管理员开通权限。";
             string ret = "success";
             OASent reply = new OASent()
             {
