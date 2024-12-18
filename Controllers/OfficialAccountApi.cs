@@ -654,7 +654,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "nanshanskipass":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
-                
+                case "nanshanreserve":
+                    ret = await NanshanReserve(receiveMsg, keyArr);
+                    break;
                 case "wanlong":
                     if (keyArr[1].Equals("trainer") && keyArr[2].Equals("reg"))
                     {
@@ -979,6 +981,31 @@ namespace SnowmeetOfficialAccount.Controllers
                 is_service = 0
             };
             ret = reply.GetXmlDocument().InnerXml.Trim();
+            return ret;
+        }
+
+        [NonAction]
+        public async Task<string> NanshanReserve(OARecevie receiveMsg, string[] keyArr)
+        {
+            string path = "/pages/ski_pass/nanshan_overtime_reserve?id=" + keyArr[1] + "&date=" + keyArr[2];
+            string content = "南山雪票，临时购买。<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + path + "\" >点击这里支付</a";
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+
             return ret;
         }
 
