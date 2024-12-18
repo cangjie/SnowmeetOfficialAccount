@@ -987,7 +987,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> NanshanReserve(OARecevie receiveMsg, string[] keyArr)
         {
-            string path = "/pages/ski_pass/nanshan_overtime_reserve?id=" + keyArr[1] + "&date=" + keyArr[2];
+            string path = "/pages/ski_pass/ski_pass_reserve?id=" + keyArr[1] + "&date=" + keyArr[2];
             string content = "南山雪票，临时购买。<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + path + "\" >点击这里支付</a";
             string ret = "success";
             OASent reply = new OASent()
