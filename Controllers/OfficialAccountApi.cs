@@ -712,7 +712,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string resort = eventArr[1].Trim();
             string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort=" 
                 + Util.UrlEncode(resort) + "&memberId=" + memberId + "\" href=\"#\" >点击此处</a>进入小程序操作。";
-            return "success";
+            return await GetSendTextMessageXml(content, receiveMsg);
         }
 
         [NonAction]
