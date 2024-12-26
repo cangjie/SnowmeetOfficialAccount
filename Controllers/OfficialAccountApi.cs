@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using static System.Net.WebRequestMethods;
 using System.Collections;
+using System.Net.Sockets;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -678,6 +679,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "ticketactivity":
                     ret = await TicketActivity(receiveMsg);
                     break;
+                case "reserveskipass":
+                    ret = await ReserveSkipass(receiveMsg);
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -698,6 +702,38 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
+            return ret;
+        }
+        [NonAction]
+        public async Task<string> ReserveSkipass(OARecevie receiveMsg)
+        {
+            string[] eventArr = receiveMsg.EventKey.Split('_');
+            int memberId = int.Parse(eventArr[2].Trim());
+            string resort = eventArr[1].Trim();
+            string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort=" 
+                + Util.UrlEncode(resort) + "&memberId=" + memberId + "\" href=\"#\" >点击此处</a>进入小程序操作。";
+            return "success";
+        }
+
+        [NonAction]
+        public async Task<string> GetSendTextMessageXml(string content, OARecevie receiveMsg)
+        {
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
             return ret;
         }
 
@@ -760,6 +796,7 @@ namespace SnowmeetOfficialAccount.Controllers
             return ret;
             //return "";
         }
+
 
         [NonAction]
         public async Task<string> ScanTicket(OARecevie receiveMsg)
