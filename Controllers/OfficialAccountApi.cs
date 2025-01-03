@@ -653,6 +653,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "recept":
                 case "shop":
                 case "nanshanskipass":
+                case "maintainreturn":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
                 case "nanshanreserve":
@@ -934,58 +935,14 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
             string ret = "success";
-
-
-
-            /*
-
-            User user = await _context.user.FindAsync(receiveMsg.FromUserName.Trim());
-            if (user == null)
-            {
-                return ret;
-            }
-            */
-
             Member member = await _memberHelper.GetMember(receiveMsg.FromUserName, "wechat_oa_openid");
-
-
-
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
-
-            
-
-
             scan.scaner_oa_open_id = receiveMsg.FromUserName.Trim() ;//user.open_id.Trim();
-
-
-            /*
-            if (user.union_id == null || user.union_id.Trim().Equals(""))
-            {
-                user = (await SyncUserInfo(user.open_id.Trim()));
-            }
-            */
             scan.scaner_union_id = member.GetNum("wechat_unionid");
-
-
-
-
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-
-            /*
-            var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
-            bool isMember = false;
-            //string cell = "";
-            if (miniUserList != null && miniUserList.Count > 0)
-            {
-                if (miniUserList[0].cell_number != null && miniUserList[0].cell_number.Length == 11)
-                {
-                    isMember = true;
-                }
-            }
-            */
             string message = "";
             bool isMember = member.GetNum("cell").Trim().Equals("") ? false : true;
             switch(scan.scan_type.Trim())
@@ -999,7 +956,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         message = "请稍后，等待店员取票。";
                     }
-                break;
+                    break;
+                case "maintainreturn":
+                    message = "请等待店员确认。";
+                    break;
                 default:
                     message = "欢迎回来，请等待店员开单。";
                     if (keyArr[1].Trim().Equals("maintain"))
@@ -1012,11 +972,6 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
-
-            
-
-
-
             OASent reply = new OASent()
             {
                 id = 0,
