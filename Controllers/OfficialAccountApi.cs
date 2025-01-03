@@ -957,7 +957,7 @@ namespace SnowmeetOfficialAccount.Controllers
                         message = "请稍后，等待店员取票。";
                     }
                     break;
-                case "maintainreturn":
+                case "发板":
                     message = "请等待店员确认。";
                     break;
                 default:
