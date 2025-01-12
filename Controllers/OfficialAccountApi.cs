@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using static System.Net.WebRequestMethods;
 using System.Collections;
+using System.Net.Sockets;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -652,6 +653,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "recept":
                 case "shop":
                 case "nanshanskipass":
+                case "maintainreturn":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     break;
                 case "nanshanreserve":
@@ -678,6 +680,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "ticketactivity":
                     ret = await TicketActivity(receiveMsg);
                     break;
+                case "reserveskipass":
+                    ret = await ReserveSkipass(receiveMsg);
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -698,6 +703,48 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
+            return ret;
+        }
+        [NonAction]
+        public async Task<string> ReserveSkipass(OARecevie receiveMsg)
+        {
+            string[] eventArr = receiveMsg.EventKey.Split('_');
+            int memberId = 0;
+            string resort = "万龙";
+            if (eventArr.Length == 3)
+            {
+                memberId = int.Parse(eventArr[2].Trim());
+                resort = eventArr[1].Trim();
+            }
+            else
+            {
+                memberId = int.Parse(eventArr[1].Trim());
+            }
+
+            string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort=" 
+                + Util.UrlEncode(resort) + "&memberId=" + memberId + "\" href=\"#\" >点击此处</a>进入小程序操作。";
+            return await GetSendTextMessageXml(content, receiveMsg);
+        }
+
+        [NonAction]
+        public async Task<string> GetSendTextMessageXml(string content, OARecevie receiveMsg)
+        {
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            string ret = reply.GetXmlDocument().InnerXml.Trim();
+
             return ret;
         }
 
@@ -760,6 +807,7 @@ namespace SnowmeetOfficialAccount.Controllers
             return ret;
             //return "";
         }
+
 
         [NonAction]
         public async Task<string> ScanTicket(OARecevie receiveMsg)
@@ -887,58 +935,14 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
             string ret = "success";
-
-
-
-            /*
-
-            User user = await _context.user.FindAsync(receiveMsg.FromUserName.Trim());
-            if (user == null)
-            {
-                return ret;
-            }
-            */
-
             Member member = await _memberHelper.GetMember(receiveMsg.FromUserName, "wechat_oa_openid");
-
-
-
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
-
-            
-
-
             scan.scaner_oa_open_id = receiveMsg.FromUserName.Trim() ;//user.open_id.Trim();
-
-
-            /*
-            if (user.union_id == null || user.union_id.Trim().Equals(""))
-            {
-                user = (await SyncUserInfo(user.open_id.Trim()));
-            }
-            */
             scan.scaner_union_id = member.GetNum("wechat_unionid");
-
-
-
-
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-
-            /*
-            var miniUserList = await _context.miniUser.Where(m => m.union_id.Trim().Equals(user.union_id.Trim())).ToListAsync();
-            bool isMember = false;
-            //string cell = "";
-            if (miniUserList != null && miniUserList.Count > 0)
-            {
-                if (miniUserList[0].cell_number != null && miniUserList[0].cell_number.Length == 11)
-                {
-                    isMember = true;
-                }
-            }
-            */
             string message = "";
             bool isMember = member.GetNum("cell").Trim().Equals("") ? false : true;
             switch(scan.scan_type.Trim())
@@ -952,7 +956,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         message = "请稍后，等待店员取票。";
                     }
-                break;
+                    break;
+                case "发板":
+                    message = "请等待店员确认。";
+                    break;
                 default:
                     message = "欢迎回来，请等待店员开单。";
                     if (keyArr[1].Trim().Equals("maintain"))
@@ -965,11 +972,6 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                     break;
             }
-
-            
-
-
-
             OASent reply = new OASent()
             {
                 id = 0,
