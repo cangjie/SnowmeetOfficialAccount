@@ -1010,9 +1010,36 @@ namespace SnowmeetOfficialAccount.Controllers
         }
 
         [NonAction]
+        public async Task<string> GetTextMessageXml(OARecevie receiveMsg, string content)
+        {
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = content.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+
+            return ret;
+        }
+
+        [NonAction]
         public async Task<string> DealPaymentAction(OARecevie receiveMsg, string[] keyArr)
         {
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            if (keyArr.Length >= 3 && keyArr[1].Equals("rent") && keyArr[2].Equals("add"))
+            {
+                return await DealRentAddPayment(receiveMsg, keyArr);
+            }
             string message = "您有一笔费用需要支付。";
             string miniAppPath = "/pages/payment/pay_hub?paymentId=" + id.ToString();// + "&item=" + item.Trim();
             if (keyArr.Length > 2 && keyArr[1].Trim().ToLower().Equals("recept"))
@@ -1020,6 +1047,8 @@ namespace SnowmeetOfficialAccount.Controllers
                 miniAppPath = "/pages/payment/pay_recept?id=" + id.ToString();
             }
             message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
+            return await GetTextMessageXml(receiveMsg, message);
+            /*
             string ret = "success";
             OASent reply = new OASent()
             {
@@ -1038,6 +1067,40 @@ namespace SnowmeetOfficialAccount.Controllers
             ret = reply.GetXmlDocument().InnerXml.Trim();
 
             return ret;
+            */
+        }
+
+        [NonAction]
+        public async Task<string> DealRentAddPayment(OARecevie receiveMsg, string[] keyArr)
+        {
+            int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            RentAdditionalPayment addPay = await _context.rentAdditionalPayment.FindAsync(id);
+            if (addPay == null)
+            {
+                return "";
+            }
+            string miniAppPath = "/pages/payment/rent_pay_add?id=" + id.ToString();
+            string msg = "您的租赁订单需要补交一笔费用。原因：" + addPay.reason.Trim() + " 金额：" + addPay.amount.ToString() + "元。";
+            msg += "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里支付</a>。"; 
+            return await GetTextMessageXml(receiveMsg, msg);
+            /*
+            string ret = "success";
+            OASent reply = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName.Trim(),
+                ToUserName = receiveMsg.FromUserName.Trim(),
+                MsgType = "text",
+                Content = msg.Trim(),
+                origin_message_id = receiveMsg.id,
+                is_service = 0
+            };
+
+            await _context.oASent.AddAsync(reply);
+            await _context.SaveChangesAsync();
+            ret = reply.GetXmlDocument().InnerXml.Trim();
+            return ret;
+            */
         }
 
         [HttpGet]
