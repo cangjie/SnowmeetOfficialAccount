@@ -352,36 +352,14 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         memberId = msaList[0].member_id;
                     }
-
-                }
-                
-            }
-
-            
-
-            /*
-            else
-            {
-                for(int i = 0; i < msaList.Count; i++)
-                {
-                    if (msaList[i].type.Trim().Equals("wechat_unionid"))
-                    {
-                        unionId = msaList[i].num.Trim();
-                        break;
-                    }
                 }
             }
-            */
-            
-
-
             if (memberId == 0)
             {
                 Member member = new Member()
                 {
                     id = 0,
                 };
-                
                 MemberSocialAccount msaOpenId = new MemberSocialAccount()
                 {
                     id = 0,
@@ -390,9 +368,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     num = openId.Trim(),
                     valid = 1
                 };
-
                 UserInfo info = GetUserInfoFromWechat(openId.Trim());
-
                 MemberSocialAccount msaUnionId = new MemberSocialAccount()
                 {
                     id = 0,
@@ -406,10 +382,6 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     member.memberSocialAccounts.Add(msaUnionId);
                 }
-
-
-
-
                 await _context.member.AddAsync(member);
                 await _context.SaveChangesAsync();
             }
@@ -683,6 +655,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "reserveskipass":
                     ret = await ReserveSkipass(receiveMsg);
                     break;
+                case "contact":
+                    ret = await GetContact(receiveMsg);
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {
@@ -704,6 +679,12 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
             }
             return ret;
+        }
+        [NonAction]
+        public async Task<string> GetContact(OARecevie receiveMsg)
+        {
+            string content = "联系方式 南山店 17800191050；崇礼旗舰店 13910228351";
+            return await GetSendTextMessageXml(content, receiveMsg);
         }
         [NonAction]
         public async Task<string> ReserveSkipass(OARecevie receiveMsg)
