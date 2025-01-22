@@ -82,7 +82,7 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             string result = "";
             string token = GetAccessToken().Trim();
-            token = "88_JykS7udIvUc8lWvrtKgsmo5otlvhocE_6eXS1gEUI2Sxj08_jlMVjzb6a6wPEaeSwQ4RGsX6jzhMMKka9ty3UEQA3-6ST7y9QNjBvh6EkLvljyK7LVhGlmHHwP8DQTeAHAJWZ";
+            //token = "88_JykS7udIvUc8lWvrtKgsmo5otlvhocE_6eXS1gEUI2Sxj08_jlMVjzb6a6wPEaeSwQ4RGsX6jzhMMKka9ty3UEQA3-6ST7y9QNjBvh6EkLvljyK7LVhGlmHHwP8DQTeAHAJWZ";
             string sentUrl = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" + token.Trim();
             string postJson = "";
             string messageJson = "";
@@ -695,7 +695,7 @@ namespace SnowmeetOfficialAccount.Controllers
             OASent.NewContent news = new OASent.NewContent()
             {
                 url = "pages/tickets/me_pick?templateId=15&channel=" + channel,
-                picUrl = "gltv7fpLtJQg_sTpVwzJY8nEtMSz_zp45SmlSMVgD47NLUYR0NNZyJNu6wd1O0p7",
+                picUrl = "gltv7fpLtJQg_sTpVwzJY9cPiXuZfG91MKnJwscUqdikZhRDtHtrDeo-MiFdzebg",
                 title = "点击领取"
             };
             OASent sent = new OASent()
