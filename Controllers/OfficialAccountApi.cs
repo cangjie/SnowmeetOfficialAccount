@@ -82,6 +82,7 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             string result = "";
             string token = GetAccessToken().Trim();
+            token = "88_JykS7udIvUc8lWvrtKgsmo5otlvhocE_6eXS1gEUI2Sxj08_jlMVjzb6a6wPEaeSwQ4RGsX6jzhMMKka9ty3UEQA3-6ST7y9QNjBvh6EkLvljyK7LVhGlmHHwP8DQTeAHAJWZ";
             string sentUrl = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" + token.Trim();
             string postJson = "";
             string messageJson = "";
@@ -101,6 +102,10 @@ namespace SnowmeetOfficialAccount.Controllers
                             + "\"url\": \"" + message.newContentArray[i].url.Trim() + "\", \"picurl\": \"" + message.newContentArray[i].picUrl.Trim() + "\" } ";
                     }
                     messageJson = "\"msgtype\": \"news\", \"news\": {\"articles\": [" + articleJson + "]}";
+                    break;
+                case "miniprogrampage":
+                    messageJson = "\"msgtype\": \"miniprogrampage\", \"miniprogrampage\": {\"title\":\"" + message.newContentArray[0].title.Trim() + "\", \"appid\": \"wxd1310896f2aa68bb\" "
+                        + ",  \"pagepath\":\"" + message.newContentArray[0].url.Trim() + "\", \"thumb_media_id\": \"" + message.newContentArray[0].picUrl + "\" }";
                     break;
                 case "text":
                 default:
@@ -619,6 +624,9 @@ namespace SnowmeetOfficialAccount.Controllers
             string[] keyArr = key.Trim().Split('_');
             switch (keyArr[0].Trim())
             {
+                case "me":
+                    ret = await Me(receiveMsg, keyArr);
+                    break;
                 case "pay":
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
@@ -679,6 +687,27 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
             }
             return ret;
+        }
+        [NonAction]
+        public async Task<string> Me(OARecevie receiveMsg, string[] kArr)
+        {
+            string channel = kArr[1].Trim() + "_" + kArr[2].Trim();
+            OASent.NewContent news = new OASent.NewContent()
+            {
+                url = "pages/tickets/me_pick?templateId=15&channel=" + channel,
+                picUrl = "gltv7fpLtJQg_sTpVwzJY8nEtMSz_zp45SmlSMVgD47NLUYR0NNZyJNu6wd1O0p7",
+                title = "点击领取"
+            };
+            OASent sent = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName,
+                ToUserName = receiveMsg.FromUserName,
+                MsgType = "miniprogrampage",
+                newContentArray = new OASent.NewContent[] { news }
+            };
+            SendServiceMessage(sent);
+            return "success";
         }
         [NonAction]
         public async Task<string> GetContact(OARecevie receiveMsg)
