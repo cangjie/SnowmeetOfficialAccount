@@ -957,6 +957,9 @@ namespace SnowmeetOfficialAccount.Controllers
                         message = "请稍后，等待店员取票。";
                     }
                     break;
+                case "觅计划旗舰引流":
+                    message = "欢迎光临，请等待店员查看您的优惠券。";
+                    break;
                 case "发板":
                     message = "请等待店员确认。";
                     break;
