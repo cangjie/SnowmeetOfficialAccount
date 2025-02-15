@@ -954,7 +954,9 @@ namespace SnowmeetOfficialAccount.Controllers
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             string message = "";
-            bool isMember = member.GetNum("cell").Trim().Equals("") ? false : true;
+            bool isMember = (member.GetNum("cell").Trim().Equals("") ? false : true)
+                && (member.GetNum("wechat_mini_openid").Trim().Equals("") ? false : true);
+
             switch(scan.scan_type.Trim())
             {
                 case "nanshanskipass":
