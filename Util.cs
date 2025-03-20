@@ -36,7 +36,26 @@ namespace SnowmeetOfficialAccount
             }
 
         }
-
+        public static string GetWebContent(string url, string postData, string contentType)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            req.Method = "POST";
+            req.ContentType = contentType;
+            int len = System.Text.Encoding.UTF8.GetByteCount(postData);
+            req.ContentLength = len;
+            Stream sPost = req.GetRequestStream();
+            StreamWriter sw = new StreamWriter(sPost);
+            sw.Write(postData);
+            sw.Close();
+            sPost.Close();
+            HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+            Stream s = res.GetResponseStream();
+            StreamReader sr = new StreamReader(s);
+            string str = sr.ReadToEnd();
+            sr.Close();
+            s.Close();
+            return str;
+        }
         public static string GetWebContent(string url)
         {
             try
@@ -74,6 +93,13 @@ namespace SnowmeetOfficialAccount
             sr.Close();
             s.Close();
             return str;
+        }
+        public static string CreateVerifyCode(int digit)
+        {
+            Random rnd = new Random();
+            long max = (long)Math.Pow(10, digit) - 1;
+            long num = rnd.NextInt64(0, max);
+            return num.ToString().PadLeft(digit, '0');
         }
     }
 }

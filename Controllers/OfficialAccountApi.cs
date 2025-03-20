@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Microsoft.Extensions.Configuration;
-//using LuqinOfficialAccount.Models;
 using System.Security.Cryptography;
 using SnowmeetOfficialAccount.Models;
 using SnowmeetOfficialAccount;
@@ -18,6 +17,7 @@ using System.Runtime.CompilerServices;
 using static System.Net.WebRequestMethods;
 using System.Collections;
 using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace SnowmeetOfficialAccount.Controllers
 {
@@ -174,7 +174,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 long timeDiff = long.Parse(nowTime) - long.Parse(tokenTime);
                 TimeSpan ts = new TimeSpan(0, 0, 0, 0, (int)timeDiff);
                 //TimeSpan ts = new TimeSpan()
-                if (ts.TotalSeconds > 300)
+                if (ts.TotalSeconds > 900)
                 {
                     token = "";
                     if (fileExists)
@@ -1100,24 +1100,6 @@ namespace SnowmeetOfficialAccount.Controllers
             string msg = "您的租赁订单需要补交一笔费用。原因：" + addPay.reason.Trim() + " 金额：" + addPay.amount.ToString() + "元。";
             msg += "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里支付</a>。"; 
             return await GetTextMessageXml(receiveMsg, msg);
-            /*
-            string ret = "success";
-            OASent reply = new OASent()
-            {
-                id = 0,
-                FromUserName = receiveMsg.ToUserName.Trim(),
-                ToUserName = receiveMsg.FromUserName.Trim(),
-                MsgType = "text",
-                Content = msg.Trim(),
-                origin_message_id = receiveMsg.id,
-                is_service = 0
-            };
-
-            await _context.oASent.AddAsync(reply);
-            await _context.SaveChangesAsync();
-            ret = reply.GetXmlDocument().InnerXml.Trim();
-            return ret;
-            */
         }
 
         [HttpGet]
@@ -1189,7 +1171,105 @@ namespace SnowmeetOfficialAccount.Controllers
             }
 
         }
+        [NonAction]
+        public async Task<WebApiLog> PerformRequest(string url, string header, string payload, 
+            string method = "GET", string source = "易龙雪聚小程序", string purpose = "", string memo = "")
+        {
+            WebApiLog log = new WebApiLog()
+            {
+                id = 0,
+                source = source.Trim(),
+                purpose = purpose.Trim(),
+                memo = memo.Trim(),
+                method = method.Trim(),
+                header = header.Trim(),
+                payload = payload.Trim(),
+                request_url = url.Trim()
+            };
+            await _context.webApiLog.AddAsync(log);
+            await _context.SaveChangesAsync();
+            try
+            {
+                switch(method.ToLower())
+                {
+                    case "post":
+                        log.response = Util.GetWebContent(log.request_url, log.payload, "application/json");
+                    break;
+                    default:
+                        log.response = Util.GetWebContent(log.request_url);
+                    break;
+                }
+            }
+            catch
+            {
 
+            }
+            log.deal = 1;
+            log.update_date = DateTime.Now;
+            _context.webApiLog.Entry(log).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return log;
+        }
+        [HttpGet]
+        public async Task SendMaintainPickVerCode(int scanId)
+        {
+            ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(scanId);
+            if (scan.biz_id == null)
+            {
+                return;
+            }
+            MaintainLive task = await _context.maintainLive.FindAsync(scan.biz_id);
+            if (task == null)
+            {
+                return;
+            }
+            List<MemberSocialAccount> taskMsaList = await _context.memberSocailAccount
+                .Where(m => (m.num.Trim().Equals(task.open_id.Trim()) && m.type.Trim().Equals("wechat_mini_openid") ))
+                .AsNoTracking().ToListAsync();
+            if (taskMsaList.Count == 0)
+            {
+                return;
+            }
+            List<MemberSocialAccount> scanMsaList = await _context.memberSocailAccount
+                .Where(m => (m.num.Trim().Equals(scan.scaner_oa_open_id ) && m.type.Trim().Equals("wechat_oa_openid") ))
+                .AsNoTracking().ToListAsync();
+            if (scanMsaList.Count == 0)
+            {
+                return;
+            }
+            if (scanMsaList[0].member_id == taskMsaList[0].member_id)
+            {
+                return;
+            }
+            List<MemberSocialAccount> oaList = await _context.memberSocailAccount
+                .Where(m => (m.member_id == taskMsaList[0].member_id && m.type.Trim().Equals("wechat_oa_openid")))
+                .AsNoTracking().ToListAsync();
+            if (oaList.Count == 0)
+            {
+                return;
+            }
+            string equipName = task.confirmed_brand.Trim() + " " + task.confirmed_equip_type + " 长度：" + task.confirmed_scale.Trim();
+            string openId = oaList[0].num.Trim();
+            string veriCode = Util.CreateVerifyCode(6);
+            task.pick_veri_code = veriCode.Trim();
+            _context.maintainLive.Entry(task).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            string url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + GetAccessToken().Trim();
+            string json = "{"
+                + "\"touser\": \"" + openId.Trim() + "\", "
+                + "\"template_id\": \"-FxfVcWYFq079YIWfaT6khxQn6__b-CD9Xty_M_iP1U\", "
+                + "\"url\": \"https://mini.snowmeet.top\", "
+                + "\"mini_program\": {"
+                + "\"appid\": \"wxd1310896f2aa68bb\", "
+                + "\"pagepath\": \"pages/index\" "
+                + " }, "
+                + "\"data\": {"
+                + "\"character_string1\":{\"value\": \"" + task.task_flow_num.Trim() + "\"}, "
+                + "\"thing6\":{\"value\": \"" + equipName.Trim() + "\"}, "
+                + "\"character_string5\":{\"value\": \"" + veriCode + "\"} "
+                + "} }";
+            await PerformRequest(url, "", json, "POST", "易龙雪聚公众号", "取板发送验证码", veriCode);
+        }
         protected class SubscribedOpenIdSet
         {
             public int total { get; set; }

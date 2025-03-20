@@ -36,6 +36,8 @@ namespace SnowmeetOfficialAccount
 
         public DbSet<TicketTemplate> ticketTemplate { get; set; }
         public DbSet<RentAdditionalPayment> rentAdditionalPayment { get; set;}
+        public DbSet<WebApiLog> webApiLog { get; set; }
+        public DbSet<MaintainLive> maintainLive { get; set; }
         
     }
 }
