@@ -635,6 +635,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "nanshanskipass":
                 case "maintainreturn":
                     ret = await ScanRecept(receiveMsg, keyArr);
+                    await SendMaintainPickVerCode(int.Parse(keyArr[keyArr.Length - 1]));
                     break;
                 case "nanshanreserve":
                     ret = await NanshanReserve(receiveMsg, keyArr);
