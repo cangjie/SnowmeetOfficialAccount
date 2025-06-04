@@ -627,6 +627,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "me":
                     ret = await Me(receiveMsg, keyArr);
                     break;
+                case "confirm":
                 case "pay":
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
