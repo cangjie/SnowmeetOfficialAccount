@@ -14,6 +14,7 @@ namespace SnowmeetOfficialAccount.Models
 		public int scan { get; set; }
 		public string scaner_union_id { get; set; }
 		public string scan_type {get; set; }
+		public int? biz_id { get; set; }
 
     }
 }
