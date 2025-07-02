@@ -37,7 +37,8 @@ namespace SnowmeetOfficialAccount
             });
 
 
-            string path = $"{Environment.CurrentDirectory}";
+            //string path = $"{Environment.CurrentDirectory}";
+            string path = Directory.GetCurrentDirectory();
 
             if (path.StartsWith("/"))
             {
