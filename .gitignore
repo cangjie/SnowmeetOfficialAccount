@@ -411,4 +411,4 @@ ASALocalRun/
 
 config.sqlServer
 appsettings.*
-.vscode/launch.json
+.vscode/*
