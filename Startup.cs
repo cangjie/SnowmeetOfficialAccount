@@ -33,7 +33,7 @@ namespace SnowmeetOfficialAccount
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SnowmeetApi", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SnowmeetOfficialAccount", Version = "v1" });
             });
 
 
