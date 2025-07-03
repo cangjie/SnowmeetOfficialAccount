@@ -216,7 +216,7 @@ namespace SnowmeetOfficialAccount.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> PushMessage([FromQuery]string signature,
+        public async Task<ActionResult<string>> PushMessage([FromQuery] string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
         {
             string ret = "success";
@@ -240,7 +240,7 @@ namespace SnowmeetOfficialAccount.Controllers
             var stream = Request.Body;
             if (stream != null)
             {
-        
+
                 using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
                 {
                     body = await reader.ReadToEndAsync();
@@ -267,68 +267,70 @@ namespace SnowmeetOfficialAccount.Controllers
                         fw.Close();
                     }
                 }
-                
+
             }
+            //try
+            //{
+            XmlDocument xmlD = new XmlDocument();
+            xmlD.LoadXml(body);
+            XmlNode root = xmlD.SelectSingleNode("//xml");
+
+            string eventStr = "";
+            string eventKey = "";
+            string content = "";
+            string msgId = "";
+            string msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
+
+            if (msgType.Trim().Equals("event"))
+            {
+                eventStr = root.SelectSingleNode("Event").InnerText.Trim();
+                eventKey = root.SelectSingleNode("EventKey").InnerText.Trim();
+            }
+            else
+            {
+                content = root.SelectSingleNode("Content").InnerText.Trim();
+                msgId = root.SelectSingleNode("MsgId").InnerText.Trim();
+                msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
+            }
+
+            OARecevie msg = new OARecevie()
+            {
+                id = 0,
+                ToUserName = root.SelectSingleNode("ToUserName").InnerText.Trim(),
+                FromUserName = root.SelectSingleNode("FromUserName").InnerText.Trim(),
+                CreateTime = root.SelectSingleNode("CreateTime").InnerText.Trim(),
+                MsgType = msgType,
+                Event = eventStr,
+                EventKey = eventKey,
+                MsgId = msgId,
+                Content = content
+
+            };
+
+            await _context.oARecevie.AddAsync(msg);
+            await _context.SaveChangesAsync();
+            /*
             try
             {
-                XmlDocument xmlD = new XmlDocument();
-                xmlD.LoadXml(body);
-                XmlNode root = xmlD.SelectSingleNode("//xml");
-
-                string eventStr = "";
-                string eventKey = "";
-                string content = "";
-                string msgId = "";
-                string msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
-
-                if (msgType.Trim().Equals("event"))
-                {
-                    eventStr = root.SelectSingleNode("Event").InnerText.Trim();
-                    eventKey = root.SelectSingleNode("EventKey").InnerText.Trim();
-                }
-                else
-                {
-                    content = root.SelectSingleNode("Content").InnerText.Trim();
-                    msgId = root.SelectSingleNode("MsgId").InnerText.Trim();
-                    msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
-                }
-
-                OARecevie msg = new OARecevie()
-                {
-                    id = 0,
-                    ToUserName = root.SelectSingleNode("ToUserName").InnerText.Trim(),
-                    FromUserName = root.SelectSingleNode("FromUserName").InnerText.Trim(),
-                    CreateTime = root.SelectSingleNode("CreateTime").InnerText.Trim(),
-                    MsgType = msgType,
-                    Event = eventStr,
-                    EventKey = eventKey,
-                    MsgId = msgId,
-                    Content = content
-
-                };
-
-                await _context.oARecevie.AddAsync(msg);
-                await _context.SaveChangesAsync();
-                try
-                {
-                    await SyncMemberInfo(msg.FromUserName.Trim());
-                    //await SyncUserInfo(msg.FromUserName.Trim());
-                    //ret = "suc";
-                }
-                catch(Exception err)
-                {
-                    ret = err.ToString().Trim();
-                }
-                ret = await DealMessage(msg);
+                await SyncMemberInfo(msg.FromUserName.Trim());
+                //await SyncUserInfo(msg.FromUserName.Trim());
+                //ret = "suc";
+            }
+            catch (Exception err)
+            {
+                ret = err.ToString().Trim();
+            }
+            ret = await DealMessage(msg);
+                /*
 
             }
             catch
             {
 
             }
+*/
 
-
-            return ret;
+            return "success";
         }
 
         [HttpGet]
