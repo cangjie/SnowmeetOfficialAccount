@@ -8,19 +8,13 @@ namespace SnowmeetOfficialAccount.Models
     {
         [Key]
         public int id { get; set; }
-
-        //[Column("member_id")]
         public int member_id { get; set; }
-
         public string type {get; set;}
-
         public string num { get; set; }
-
         public int valid { get; set; } = 1;
-
         public string memo { get; set; } = "";
-
-       // public Member member { get; set; }
+        [ForeignKey("member_id")]
+        public Member member { get; set; }
 
     }
 }

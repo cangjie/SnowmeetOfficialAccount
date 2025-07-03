@@ -306,9 +306,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 Content = content
 
             };
-
             await _context.oARecevie.AddAsync(msg);
             await _context.SaveChangesAsync();
+            ret = await DealMessage(msg);
             /*
             try
             {
@@ -330,7 +330,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
 */
 
-            return "success";
+            return ret;
         }
 
         [HttpGet]
@@ -435,8 +435,6 @@ namespace SnowmeetOfficialAccount.Controllers
             }
 
         }
-
-
         [NonAction]
         public UserInfo GetUserInfoFromWechat(string openId)
         {
@@ -448,8 +446,6 @@ namespace SnowmeetOfficialAccount.Controllers
             UserInfo info = JsonConvert.DeserializeObject<UserInfo>(ret);
             return info;
         }
-       
-
         [HttpGet]
         public async Task<User> SyncUserInfo(string openId)
         {
@@ -634,6 +630,9 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await DealPaymentAction(receiveMsg, keyArr);
                     break;
                 case "recept":
+                    ret = await ScanReceptNew(receiveMsg, keyArr);
+                    
+                    break;
                 case "shop":
                 case "nanshanskipass":
                 case "maintainreturn":
@@ -944,7 +943,14 @@ namespace SnowmeetOfficialAccount.Controllers
             return ret;
 
         }
+        [NonAction]
+        public async Task<string> ScanReceptNew(OARecevie receiveMsg, string[] keyArr)
+        {
+            int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            ScanQrCode scanQrCode = await _context.scanQrCode.FindAsync(id);
 
+            return "success";
+        }
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
         {
