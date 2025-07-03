@@ -18,7 +18,8 @@ namespace SnowmeetOfficialAccount.Models
         public int is_staff { get; set; } = 0;
         public int is_manager { get; set;} = 0;
         public int is_admin { get; set; } = 0;
-
+        public DateTime? update_date { get; set; } = null;
+        public DateTime create_date { get; set; }
         public string GetNum(string type)
         {
             string openId = "";
@@ -51,7 +52,7 @@ namespace SnowmeetOfficialAccount.Models
         }
 
         
-        public ICollection<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
+        public List<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
 
         public List<MemberSocialAccount> GetInfo(string type)
         {

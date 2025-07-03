@@ -13,6 +13,8 @@ namespace SnowmeetOfficialAccount.Models
         public string num { get; set; }
         public int valid { get; set; } = 1;
         public string memo { get; set; } = "";
+        public DateTime? update_date { get; set; } = null;
+        public DateTime create_date { get; set; }
         [ForeignKey("member_id")]
         public Member member { get; set; }
 

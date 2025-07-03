@@ -27,9 +27,10 @@ namespace SnowmeetOfficialAccount
         public DbSet<RentAdditionalPayment> rentAdditionalPayment { get; set; }
         public DbSet<WebApiLog> webApiLog { get; set; }
         public DbSet<MaintainLive> maintainLive { get; set; }
-        
+
         ///new season
         public DbSet<ScanQrCode> scanQrCode { get; set; }
+        public DbSet<CoreDataModLog> dataLog { get; set; }
         
     }
 }

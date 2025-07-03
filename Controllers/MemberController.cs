@@ -100,19 +100,130 @@ namespace SnowmeetOfficialAccount.Controllers
                 await AddMemberInfo(member.id, openId, "wechat_oa_openid");
             }
             if (!existsUnionId)
-            { 
+            {
                 await AddMemberInfo(member.id, unionId, "wechat_unionid");
             }
         }
         [NonAction]
         public async Task AddMemberInfo(int memberId, string num, string type)
-        { 
-
+        {
+            List<MemberSocialAccount> msaList = await _db.memberSocailAccount
+                .Where(m => m.type.Equals(type) && m.member_id == memberId).ToListAsync();
+            bool exists = false;
+            for (int i = 0; i < msaList.Count; i++)
+            {
+                MemberSocialAccount msa = msaList[i];
+                if (msa.num.Trim().Equals(num))
+                {
+                    exists = true;
+                    if (msa.valid == 0)
+                    {
+                        msa.valid = 1;
+                        msa.update_date = DateTime.Now;
+                        CoreDataModLog log = new CoreDataModLog()
+                        {
+                            id = 0,
+                            table_name = "member_social_account",
+                            field_name = "valid",
+                            key_value = msa.id,
+                            scene = "用户扫码关注公众号",
+                            member_id = memberId,
+                            staff_id = null,
+                            prev_value = "0",
+                            current_value = "1",
+                            is_manual = 0
+                        };
+                        _db.memberSocailAccount.Entry(msa).State = EntityState.Modified;
+                        await _db.dataLog.AddAsync(log);
+                    }
+                }
+                else
+                {
+                    if (type.Equals("wechat_oa_openid") || type.Equals("wechat_unioniud"))
+                    {
+                        if (msa.valid == 1)
+                        {
+                            msa.valid = 0;
+                            msa.update_date = DateTime.Now;
+                            CoreDataModLog log = new CoreDataModLog()
+                            {
+                                id = 0,
+                                table_name = "member_social_account",
+                                field_name = "valid",
+                                key_value = msa.id,
+                                scene = "用户扫码关注公众号",
+                                member_id = memberId,
+                                staff_id = null,
+                                prev_value = "1",
+                                current_value = "0",
+                                is_manual = 0
+                            };
+                            _db.memberSocailAccount.Entry(msa).State = EntityState.Modified;
+                            await _db.dataLog.AddAsync(log);
+                        }
+                    }
+                }
+            }
+            if (!exists)
+            {
+                MemberSocialAccount msa = new MemberSocialAccount()
+                {
+                    id = 0,
+                    member_id = memberId,
+                    type = type,
+                    valid = 1,
+                    num = num,
+                    create_date = DateTime.Now
+                };
+                await _db.memberSocailAccount.AddAsync(msa);
+            }
+            await _db.SaveChangesAsync();
         }
         [NonAction]
         public async Task<Member> CreateMember(string openId, string unionId)
         {
-            return null;
+            Member member = new Member()
+            {
+                id = 0,
+                memberSocialAccounts = new List<MemberSocialAccount>(),
+                create_date = DateTime.Now
+            };
+            member.memberSocialAccounts.Add(new MemberSocialAccount()
+            {
+                id = 0,
+                member_id = member.id,
+                type = "wechat_oa_openId",
+                num = openId.Trim(),
+                valid = 1,
+                create_date = DateTime.Now
+            });
+            member.memberSocialAccounts.Add(new MemberSocialAccount()
+            {
+                id = 0,
+                member_id = member.id,
+                type = "wechat_unionid",
+                num = unionId.Trim(),
+                valid = 1,
+                create_date = DateTime.Now
+            });
+            await _db.member.AddAsync(member);
+            await _db.SaveChangesAsync();
+            CoreDataModLog log = new CoreDataModLog()
+            {
+                id = 0,
+                table_name = "member",
+                field_name = null,
+                key_value = member.id,
+                scene = "用户扫码关注公众号",
+                member_id = member.id,
+                staff_id = null,
+                prev_value = null,
+                current_value = null,
+                is_manual = 1
+            };
+            await _db.dataLog.AddAsync(log);
+            await _db.SaveChangesAsync();
+            return member;
         }
         [NonAction]
         public async Task<Member> GetMember(string num, string type = "")
