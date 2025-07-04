@@ -40,6 +40,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 memberId = listMsaOfficial[0].member_id;
             }
+            /*
             if (memberId != null)
             {
                 OfficialAccountApi _oaHelper = new OfficialAccountApi(_db, _config);
@@ -56,6 +57,17 @@ namespace SnowmeetOfficialAccount.Controllers
                     }
                 }
             }
+            */
+            if (memberId == null)
+            {
+                OfficialAccountApi _oaHelper = new OfficialAccountApi(_db, _config);
+                userInfo = _oaHelper.GetUserInfoFromWechat(openId);
+                if (userInfo != null && userInfo.unionid != null)
+                {
+                    unionId = userInfo.unionid.Trim();
+                }
+            }
+
             if (memberId == null && unionId != null)
             {
                 return await CreateMember(openId.Trim(), unionId.Trim(), channel);
@@ -68,7 +80,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     return null;
                 }
-                await CorrectMemberInfo(memberList[0], openId, unionId);
+                //await CorrectMemberInfo(memberList[0], openId, unionId);
                 return memberList[0];
             }
             else
