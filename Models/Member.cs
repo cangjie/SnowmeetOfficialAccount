@@ -14,12 +14,14 @@ namespace SnowmeetOfficialAccount.Models
         public int is_merge {get; set; } = 0;
         public int? merge_id {get; set;} = null;
         public string source {get; set; } = "";
-
+        public string channel_to_know { get; set; } = "";
         public int is_staff { get; set; } = 0;
         public int is_manager { get; set;} = 0;
         public int is_admin { get; set; } = 0;
         public DateTime? update_date { get; set; } = null;
         public DateTime create_date { get; set; }
+        [NotMapped]
+        public bool isNew { get; set; }
         public string GetNum(string type)
         {
             string openId = "";

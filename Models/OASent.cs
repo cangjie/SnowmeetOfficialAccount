@@ -8,7 +8,7 @@ namespace SnowmeetOfficialAccount.Models
 	[Table("oa_sent")]
 	public class OASent
 	{
-        public struct NewContent
+        public struct NewsContent
         {
             public string title { get; set; }
             public string description { get; set; }
@@ -31,7 +31,7 @@ namespace SnowmeetOfficialAccount.Models
 		public string err_msg { get; set; } = "";
 
         [NotMapped]
-        public NewContent[] newContentArray { get; set; } = new NewContent[0];
+        public NewsContent[] newsContentArray { get; set; } = new NewsContent[0];
 
 
 		public XmlDocument GetXmlDocument()
@@ -62,16 +62,32 @@ namespace SnowmeetOfficialAccount.Models
                     n.InnerXml = "<![CDATA[" + Content.Trim() + "]]>";
                     xmlD.SelectSingleNode("//xml").AppendChild(n);
                     break;
-                /*
+                
                 case "news":
                     n = xmlD.CreateNode(XmlNodeType.Element, "ArticleCount", "");
-                    n.InnerXml = "<![CDATA[" + sqlDr["wxreplymsg_msgcount"].ToString().Trim() + "]]>";
+                    n.InnerText = newsContentArray.Length.ToString();
                     xmlD.SelectSingleNode("//xml").AppendChild(n);
                     n = xmlD.CreateNode(XmlNodeType.Element, "Articles", "");
-                    n.InnerXml = sqlDr["wxreplymsg_content"].ToString().Trim();
+                    foreach (NewsContent news in newsContentArray)
+                    {
+                        XmlNode itemNode = xmlD.CreateNode(XmlNodeType.Element, "item", "");
+                        XmlNode titleNode = xmlD.CreateNode(XmlNodeType.Element, "Title", "");
+                        titleNode.InnerXml = "<![CDATA[" + news.title + "]]>";
+                        itemNode.AppendChild(titleNode);
+                        XmlNode descNode = xmlD.CreateNode(XmlNodeType.Element, "Description", "");
+                        descNode.InnerXml = "<![CDATA[" + news.description + "]]>";
+                        itemNode.AppendChild(descNode);
+                        XmlNode picUrlNode = xmlD.CreateNode(XmlNodeType.Element, "PicUrl", "");
+                        picUrlNode.InnerXml = "<![CDATA[" + news.picUrl + "]]>";
+                        itemNode.AppendChild(picUrlNode);
+                        XmlNode urlNode = xmlD.CreateNode(XmlNodeType.Element, "Url", "");
+                        picUrlNode.InnerXml = "<![CDATA[" + news.url + "]]>";
+                        itemNode.AppendChild(urlNode);
+                        n.AppendChild(itemNode);
+                    }
                     xmlD.SelectSingleNode("//xml").AppendChild(n);
-
                     break;
+                /*
                 case "image":
                     n = xmlD.CreateNode(XmlNodeType.Element, "Image", "");
                     XmlNode subN = xmlD.CreateNode(XmlNodeType.Element, "MediaId", "");

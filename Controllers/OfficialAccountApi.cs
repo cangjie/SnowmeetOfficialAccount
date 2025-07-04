@@ -95,17 +95,17 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
                 case "news":
                     string articleJson = "";
-                    for (int i = 0; i < message.newContentArray.Length; i++)
+                    for (int i = 0; i < message.newsContentArray.Length; i++)
                     {
                         articleJson = articleJson + ((!articleJson.Trim().Equals("")) ? ", " : "")
-                            + "{\"title\": \"" + message.newContentArray[i].title.Trim() + "\", \"description\": \"" + message.newContentArray[i].description.Trim() + "\", "
-                            + "\"url\": \"" + message.newContentArray[i].url.Trim() + "\", \"picurl\": \"" + message.newContentArray[i].picUrl.Trim() + "\" } ";
+                            + "{\"title\": \"" + message.newsContentArray[i].title.Trim() + "\", \"description\": \"" + message.newsContentArray[i].description.Trim() + "\", "
+                            + "\"url\": \"" + message.newsContentArray[i].url.Trim() + "\", \"picurl\": \"" + message.newsContentArray[i].picUrl.Trim() + "\" } ";
                     }
                     messageJson = "\"msgtype\": \"news\", \"news\": {\"articles\": [" + articleJson + "]}";
                     break;
                 case "miniprogrampage":
-                    messageJson = "\"msgtype\": \"miniprogrampage\", \"miniprogrampage\": {\"title\":\"" + message.newContentArray[0].title.Trim() + "\", \"appid\": \"wxd1310896f2aa68bb\" "
-                        + ",  \"pagepath\":\"" + message.newContentArray[0].url.Trim() + "\", \"thumb_media_id\": \"" + message.newContentArray[0].picUrl + "\" }";
+                    messageJson = "\"msgtype\": \"miniprogrampage\", \"miniprogrampage\": {\"title\":\"" + message.newsContentArray[0].title.Trim() + "\", \"appid\": \"wxd1310896f2aa68bb\" "
+                        + ",  \"pagepath\":\"" + message.newsContentArray[0].url.Trim() + "\", \"thumb_media_id\": \"" + message.newsContentArray[0].picUrl + "\" }";
                     break;
                 case "text":
                 default:
@@ -631,7 +631,6 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
                 case "recept":
                     ret = await ScanReceptNew(receiveMsg, keyArr);
-                    
                     break;
                 case "shop":
                 case "nanshanskipass":
@@ -695,7 +694,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task<string> Me(OARecevie receiveMsg, string[] kArr)
         {
             string channel = kArr[1].Trim() + "_" + kArr[2].Trim();
-            OASent.NewContent news = new OASent.NewContent()
+            OASent.NewsContent news = new OASent.NewsContent()
             {
                 url = "pages/tickets/me_pick?templateId=15&channel=" + channel,
                 picUrl = "gltv7fpLtJQg_sTpVwzJY9cPiXuZfG91MKnJwscUqdikZhRDtHtrDeo-MiFdzebg",
@@ -707,7 +706,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 FromUserName = receiveMsg.ToUserName,
                 ToUserName = receiveMsg.FromUserName,
                 MsgType = "miniprogrampage",
-                newContentArray = new OASent.NewContent[] { news }
+                newsContentArray = new OASent.NewsContent[] { news }
             };
             SendServiceMessage(sent);
             return "success";
@@ -948,8 +947,49 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ScanQrCode scanQrCode = await _context.scanQrCode.FindAsync(id);
-
-            return "success";
+            MemberController _memberHelper = new MemberController(_context, _config);
+            Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "店铺接待，扫码关注公众号");
+            string url = "";
+            string pic = "";
+            string title = "";
+            if (member.isNew)
+            {
+                title = "恭喜注册为易龙雪聚的新会员";
+                pic = "https://mini.snowmeet.top/images/welcome_new.jpg";
+                url = "";
+            }
+            else if (member.cell == null)
+            {
+                title = "请验证您的手机号";
+                pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
+                url = "";
+            }
+            else
+            { 
+                title = "请等待店员开单";
+                pic = "https://mini.snowmeet.top/images/wait.jpg";
+                url = "";
+            }
+            OASent sent = new OASent()
+            {
+                id = 0,
+                is_service = 0,
+                FromUserName = _settings.originalId.Trim(),
+                ToUserName = receiveMsg.FromUserName,
+                origin_message_id = receiveMsg.id,
+                MsgType = "news",
+                newsContentArray = new OASent.NewsContent[] { new OASent.NewsContent()
+                {
+                    title = title,
+                    picUrl = pic,
+                    description = "",
+                    url = url
+                } }
+            };
+            sent.Content = sent.GetXmlDocument().InnerXml.Trim();
+            await _context.oASent.AddAsync(sent);
+            await _context.SaveChangesAsync();
+            return sent.Content;
         }
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
@@ -1075,28 +1115,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
             return await GetTextMessageXml(receiveMsg, message);
-            /*
-            string ret = "success";
-            OASent reply = new OASent()
-            {
-                id = 0,
-                FromUserName = receiveMsg.ToUserName.Trim(),
-                ToUserName = receiveMsg.FromUserName.Trim(),
-                MsgType = "text",
-                Content = message.Trim(),
-                origin_message_id = receiveMsg.id,
-                is_service = 0
-            };
-
-            await _context.oASent.AddAsync(reply);
-            await _context.SaveChangesAsync();
-
-            ret = reply.GetXmlDocument().InnerXml.Trim();
-
-            return ret;
-            */
         }
-
         [NonAction]
         public async Task<string> DealRentAddPayment(OARecevie receiveMsg, string[] keyArr)
         {
@@ -1111,7 +1130,6 @@ namespace SnowmeetOfficialAccount.Controllers
             msg += "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里支付</a>。"; 
             return await GetTextMessageXml(receiveMsg, msg);
         }
-
         [HttpGet]
         public string GetOAQRCodeUrl(string content)
         {

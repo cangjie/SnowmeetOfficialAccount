@@ -28,7 +28,7 @@ namespace SnowmeetOfficialAccount.Controllers
             _settings = Settings.GetSettings(_config);
         }
         [NonAction]
-        public async Task<Member> GetMemberByOfficialAccountOpenId(string openId)
+        public async Task<Member> GetMemberByOfficialAccountOpenId(string openId, string channel)
         {
             OfficialAccountApi.UserInfo? userInfo = null;
             string? unionId = null;
@@ -58,7 +58,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             if (memberId == null && unionId != null)
             {
-                return await CreateMember(openId.Trim(), unionId.Trim());
+                return await CreateMember(openId.Trim(), unionId.Trim(), channel);
             }
             else if (memberId != null)
             {
@@ -180,12 +180,14 @@ namespace SnowmeetOfficialAccount.Controllers
             await _db.SaveChangesAsync();
         }
         [NonAction]
-        public async Task<Member> CreateMember(string openId, string unionId)
+        public async Task<Member> CreateMember(string openId, string unionId, string channel)
         {
             Member member = new Member()
             {
                 id = 0,
                 memberSocialAccounts = new List<MemberSocialAccount>(),
+                channel_to_know = channel,
+                isNew = true,
                 create_date = DateTime.Now
             };
             member.memberSocialAccounts.Add(new MemberSocialAccount()
