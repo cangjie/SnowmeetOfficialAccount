@@ -947,8 +947,24 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ScanQrCode scanQrCode = await _context.scanQrCode.FindAsync(id);
+            if (scanQrCode == null)
+            {
+                return "success";
+            }
+            scanQrCode.scaned = 1;
+            scanQrCode.scan_time = DateTime.Now;
+            _context.Entry(scanQrCode).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             MemberController _memberHelper = new MemberController(_context, _config);
             Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "店铺接待，扫码关注公众号");
+            if (member != null)
+            {
+                scanQrCode.scaner_member_id = member.id;
+                if (member.cell != null)
+                {
+                    scanQrCode.cell = member.cell.Trim();
+                }
+            }
             string url = "";
             string pic = "";
             string title = "";
