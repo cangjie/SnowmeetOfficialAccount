@@ -66,6 +66,24 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     unionId = userInfo.unionid.Trim();
                 }
+                List<MemberSocialAccount> listUnionId = await _db.memberSocailAccount
+                    .Where(m => m.type.Equals("wechat_unionid") && m.valid == 1 && m.num.Equals(unionId))
+                    .AsNoTracking().ToListAsync();
+                if (listUnionId != null && listUnionId.Count > 0)
+                {
+                    memberId = listUnionId[0].member_id;
+                    MemberSocialAccount msaOA = new MemberSocialAccount()
+                    {
+                        id = 0,
+                        member_id = (int)memberId,
+                        type = "wechat_oa_openid",
+                        valid = 1,
+                        num = openId,
+                        create_date = DateTime.Now
+                    };
+                    await _db.memberSocailAccount.AddAsync(msaOA);
+                    await _db.SaveChangesAsync();
+                }
             }
 
             if (memberId == null && unionId != null)
