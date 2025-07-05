@@ -67,7 +67,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     unionId = userInfo.unionid.Trim();
                 }
                 List<MemberSocialAccount> listUnionId = await _db.memberSocailAccount
-                    .Where(m => m.type.Equals("wechat_unionid") && m.valid == 1 && m.num.Equals(unionId))
+                    .Where(m => m.type.Equals("wechat_unionid") && m.valid == 1 && m.num.Equals(unionId) && !unionId.Trim().Equals(""))
                     .AsNoTracking().ToListAsync();
                 if (listUnionId != null && listUnionId.Count > 0)
                 {
