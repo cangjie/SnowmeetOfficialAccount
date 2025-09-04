@@ -570,7 +570,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await DealSubscribeMessage(receiveMsg);
                     try
                     {
-                        await SetFollowingStatus(receiveMsg.ToUserName.Trim(), true);
+                        await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
                     }
                     catch
                     { 
@@ -580,11 +580,11 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "unsubscribe":
                     try
                     {
-                        await SetFollowingStatus(receiveMsg.ToUserName.Trim(), false);
+                        await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
                     }
                     catch
                     { 
-                        
+
                     }
                     break;
                 default:
