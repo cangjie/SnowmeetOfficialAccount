@@ -631,7 +631,8 @@ namespace SnowmeetOfficialAccount.Controllers
 
             };
             await _context.dataLog.AddAsync(log);
-            await _context.SaveChangesAsync();
+            int i = await _context.SaveChangesAsync();
+            Console.WriteLine(i.ToString());
         }
 
         [NonAction]
