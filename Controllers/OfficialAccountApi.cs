@@ -568,24 +568,28 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
                 case "subscribe":
                     ret = await DealSubscribeMessage(receiveMsg);
-                    try
-                    {
-                        await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
+                    //try
+                    //{
+                    await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
+                    /*
                     }
                     catch
                     { 
 
                     }
+                    */
                     break;
                 case "unsubscribe":
-                    try
-                    {
-                        await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
+                    //try
+                    //{
+                    await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
+                        /*
                     }
                     catch
                     { 
 
                     }
+                    */
                     break;
                 default:
                     ret = await DealCommonMessage(receiveMsg);
