@@ -614,6 +614,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 return;
             }
             member.following_wechat = following ? 1 : 0;
+            member.update_date = DateTime.Now;
             _context.member.Entry(member).State = EntityState.Modified;
             CoreDataModLog log = new CoreDataModLog()
             {
