@@ -567,10 +567,11 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await DealScanMessage(receiveMsg);
                     break;
                 case "subscribe":
+                    await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
                     ret = await DealSubscribeMessage(receiveMsg);
                     //try
                     //{
-                    await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
+                    
                     /*
                     }
                     catch
@@ -583,13 +584,15 @@ namespace SnowmeetOfficialAccount.Controllers
                     //try
                     //{
                     await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
+                    ret = "ok";
+                    
                         /*
-                    }
-                    catch
-                    { 
+            }
+            catch
+            { 
 
-                    }
-                    */
+            }
+            */
                     break;
                 default:
                     ret = await DealCommonMessage(receiveMsg);
