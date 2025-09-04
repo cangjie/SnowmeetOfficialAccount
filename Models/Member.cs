@@ -18,6 +18,8 @@ namespace SnowmeetOfficialAccount.Models
         public int is_staff { get; set; } = 0;
         public int is_manager { get; set;} = 0;
         public int is_admin { get; set; } = 0;
+        public int? following_wechat { get; set; } = null;
+        public string member_type { get; set; } = "wechat";
         public DateTime? update_date { get; set; } = null;
         public DateTime create_date { get; set; }
         [NotMapped]

@@ -498,7 +498,6 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             return user;
         }
-
         [HttpGet]
         public async Task<ActionResult<string>> DealMessageTest(int id)
         {
@@ -569,6 +568,24 @@ namespace SnowmeetOfficialAccount.Controllers
                     break;
                 case "subscribe":
                     ret = await DealSubscribeMessage(receiveMsg);
+                    try
+                    {
+                        await SetFollowingStatus(receiveMsg.ToUserName.Trim(), true);
+                    }
+                    catch
+                    { 
+
+                    }
+                    break;
+                case "unsubscribe":
+                    try
+                    {
+                        await SetFollowingStatus(receiveMsg.ToUserName.Trim(), false);
+                    }
+                    catch
+                    { 
+                        
+                    }
                     break;
                 default:
                     ret = await DealCommonMessage(receiveMsg);
@@ -576,6 +593,40 @@ namespace SnowmeetOfficialAccount.Controllers
             }
 
             return ret;
+        }
+        [NonAction]
+        public async Task SetFollowingStatus(string openId, bool following)
+        {
+            MemberSocialAccount msa = await _context.memberSocailAccount
+                .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId.Trim()) && m.valid == 1))
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (msa == null)
+            {
+                return;
+            }
+            Member member = await _context.member.Where(m => (m.id == msa.member_id)).AsNoTracking().FirstOrDefaultAsync();
+            if (member == null)
+            {
+                return;
+            }
+            member.following_wechat = following ? 1 : 0;
+            _context.member.Entry(member).State = EntityState.Modified;
+            CoreDataModLog log = new CoreDataModLog()
+            {
+                id = 0,
+                table_name = "member",
+                field_name = "following_wechat",
+                prev_value = (following ? 0 : 1).ToString(),
+                current_value = (following ? 1 : 0).ToString(),
+                is_manual = 1,
+                manual_memo = "用户关注",
+                create_date = DateTime.Now,
+                key_value = member.id,
+                scene = "公众号操作"
+
+            };
+            await _context.dataLog.AddAsync(log);
+            await _context.SaveChangesAsync();
         }
 
         [NonAction]
