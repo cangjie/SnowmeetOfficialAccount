@@ -584,7 +584,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     //try
                     //{
                     await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
-                    ret = "ok";
+                    //ret = "ok";
                     
                         /*
             }
@@ -635,7 +635,7 @@ namespace SnowmeetOfficialAccount.Controllers
             };
             await _context.dataLog.AddAsync(log);
             int i = await _context.SaveChangesAsync();
-            Console.WriteLine(i.ToString());
+            //Console.WriteLine(i.ToString());
         }
 
         [NonAction]
