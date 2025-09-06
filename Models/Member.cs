@@ -23,7 +23,7 @@ namespace SnowmeetOfficialAccount.Models
         public DateTime? update_date { get; set; } = null;
         public DateTime create_date { get; set; }
         [NotMapped]
-        public bool isNew { get; set; }
+        public bool isNew { get; set; } = false;
         public string GetNum(string type)
         {
             string openId = "";

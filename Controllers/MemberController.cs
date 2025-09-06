@@ -40,24 +40,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 memberId = listMsaOfficial[0].member_id;
             }
-            /*
-            if (memberId != null)
-            {
-                OfficialAccountApi _oaHelper = new OfficialAccountApi(_db, _config);
-                userInfo = _oaHelper.GetUserInfoFromWechat(openId);
-                if (userInfo != null && userInfo.unionid != null)
-                {
-                    unionId = userInfo.unionid;
-                    listMsaOfficial = await _db.memberSocailAccount
-                        .Where(m => m.num.Trim().Equals(unionId.Trim()) && m.type.Trim().Equals("wechat_unionid"))
-                        .AsNoTracking().ToListAsync();
-                    if (listMsaOfficial != null && listMsaOfficial.Count > 0)
-                    {
-                        memberId = listMsaOfficial[0].member_id;
-                    }
-                }
-            }
-            */
+            
             if (memberId == null)
             {
                 OfficialAccountApi _oaHelper = new OfficialAccountApi(_db, _config);
@@ -98,7 +81,6 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     return null;
                 }
-                //await CorrectMemberInfo(memberList[0], openId, unionId);
                 return memberList[0];
             }
             else
@@ -218,7 +200,8 @@ namespace SnowmeetOfficialAccount.Controllers
                 memberSocialAccounts = new List<MemberSocialAccount>(),
                 channel_to_know = channel,
                 isNew = true,
-                create_date = DateTime.Now
+                create_date = DateTime.Now,
+                following_wechat = 1
             };
             member.memberSocialAccounts.Add(new MemberSocialAccount()
             {

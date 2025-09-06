@@ -552,10 +552,8 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.oASent.AddAsync(reply);
                 await _context.SaveChangesAsync();
             }
-            
             return ret;
         }
-
         [NonAction]
         public async Task<string> DealEventMessage(OARecevie receiveMsg)
         {
@@ -564,41 +562,20 @@ namespace SnowmeetOfficialAccount.Controllers
             switch (receiveMsg.Event.ToLower().Trim())
             {
                 case "scan":
+                    await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
                     ret = await DealScanMessage(receiveMsg);
                     break;
                 case "subscribe":
                     await SetFollowingStatus(receiveMsg.FromUserName.Trim(), true);
                     ret = await DealSubscribeMessage(receiveMsg);
-                    //try
-                    //{
-                    
-                    /*
-                    }
-                    catch
-                    { 
-
-                    }
-                    */
                     break;
                 case "unsubscribe":
-                    //try
-                    //{
                     await SetFollowingStatus(receiveMsg.FromUserName.Trim(), false);
-                    //ret = "ok";
-                    
-                        /*
-            }
-            catch
-            { 
-
-            }
-            */
                     break;
                 default:
                     ret = await DealCommonMessage(receiveMsg);
                     break;
             }
-
             return ret;
         }
         [NonAction]
