@@ -659,6 +659,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             bool canGenerate = false;
             string failReason = "";
+            DateTime expireDate = DateTime.Parse("2026-04-30");
             switch (templateId)
             {
                 case 12:
@@ -708,7 +709,8 @@ namespace SnowmeetOfficialAccount.Controllers
                     miniapp_recept_path = "",
                     create_date = DateTime.Now,
                     channel = channel,
-                    valid = 1
+                    valid = 1,
+                    expire_date = expireDate
                 };
                 await _context.AddAsync(ticket);
                 await _context.SaveChangesAsync();

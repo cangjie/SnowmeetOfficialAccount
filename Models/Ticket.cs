@@ -33,6 +33,7 @@ namespace SnowmeetOfficialAccount.Models
 
         public string channel { get; set; } = "";
         public int valid { get; set; } = 0;
+        public DateTime expire_date { get; set; } 
 
         [NotMapped]
         public string status
