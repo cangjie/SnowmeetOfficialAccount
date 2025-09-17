@@ -682,7 +682,9 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             TicketTemplate template = await _context.ticketTemplate.Where(t => t.id == templateId)
                     .AsNoTracking().FirstOrDefaultAsync();
-            string url = "https://wxoa.snowmeet.top/0.png";
+            string pic = "https://wxoa.snowmeet.top/0.png";
+            //string url = "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_list\" href=\"#\" >点击查看</a>";
+            string url = "https://snowmeet.wanlonghuaxue.com/mapp/open_mapp_page.html?path=pages/mine/ticket/ticket_list&query=";
             if (canGenerate)
             {
                 string code = Util.GetRandomCode(9);
@@ -716,7 +718,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.AddAsync(ticket);
                 await _context.SaveChangesAsync();
                 string title = template.name.Trim() + " 已经领取成功";
-                string pic = "";
+                //string pic = "";
                 //string url = "";
                 OASent sent = new OASent()
                 {
@@ -742,7 +744,7 @@ namespace SnowmeetOfficialAccount.Controllers
             else
             {
                 string title = template.name.Trim();// + " " + failReason;
-                string pic = "";
+                //string pic = "";
                 //string url = "";
                 OASent sent = new OASent()
                 {
