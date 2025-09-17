@@ -14,6 +14,7 @@ namespace SnowmeetOfficialAccount.Models
         public string memo { get; set; }
 
         public string open_id { get; set; }
+        public int? member_id { get; set; } = null;
 
         public string oper_open_id { get; set; }
 
@@ -31,6 +32,7 @@ namespace SnowmeetOfficialAccount.Models
         public DateTime create_date { get; set; }
 
         public string channel { get; set; } = "";
+        public int valid { get; set; } = 0;
 
         [NotMapped]
         public string status
