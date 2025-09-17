@@ -730,7 +730,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         title = title,
                         picUrl = pic,
-                        description = "",
+                        description = "领取成功，请在本雪季使用。",
                         url = url
                     } }
                 };
@@ -741,7 +741,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             else
             {
-                string title = template.name.Trim() + " " + failReason;
+                string title = template.name.Trim();// + " " + failReason;
                 string pic = "";
                 //string url = "";
                 OASent sent = new OASent()
@@ -756,7 +756,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         title = title,
                         picUrl = pic,
-                        description = "",
+                        description = failReason,
                         url = url
                     } }
                 };
