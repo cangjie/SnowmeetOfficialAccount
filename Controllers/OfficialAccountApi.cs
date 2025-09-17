@@ -682,6 +682,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             TicketTemplate template = await _context.ticketTemplate.Where(t => t.id == templateId)
                     .AsNoTracking().FirstOrDefaultAsync();
+            string url = "https://wxoa.snowmeet.top/0.png";
             if (canGenerate)
             {
                 string code = Util.GetRandomCode(9);
@@ -716,7 +717,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 await _context.SaveChangesAsync();
                 string title = template.name.Trim() + " 已经领取成功";
                 string pic = "";
-                string url = "";
+                //string url = "";
                 OASent sent = new OASent()
                 {
                     id = 0,
@@ -742,7 +743,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 string title = template.name.Trim() + " " + failReason;
                 string pic = "";
-                string url = "";
+                //string url = "";
                 OASent sent = new OASent()
                 {
                     id = 0,
