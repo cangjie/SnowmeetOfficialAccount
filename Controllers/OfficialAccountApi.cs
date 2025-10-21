@@ -1117,13 +1117,13 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 title = "恭喜注册为易龙雪聚的新会员";
                 pic = "https://mini.snowmeet.top/images/welcome_new.jpg";
-                url = "weixin://dl/business/?appid=wxd1310896f2aa68bb&path=pages/register/reg";
+                url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
             }
             else if (member.cell == null)
             {
                 title = "请验证您的手机号";
                 pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
-                url = "weixin://dl/business/?appid=wxd1310896f2aa68bb&path=pages/register/reg";
+                url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
             }
             else
             {
