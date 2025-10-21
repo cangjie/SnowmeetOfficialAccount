@@ -309,27 +309,6 @@ namespace SnowmeetOfficialAccount.Controllers
             await _context.oARecevie.AddAsync(msg);
             await _context.SaveChangesAsync();
             ret = await DealMessage(msg);
-            /*
-            try
-            {
-                await SyncMemberInfo(msg.FromUserName.Trim());
-                //await SyncUserInfo(msg.FromUserName.Trim());
-                //ret = "suc";
-            }
-            catch (Exception err)
-            {
-                ret = err.ToString().Trim();
-            }
-            ret = await DealMessage(msg);
-                /*
-
-            }
-            catch
-            {
-
-            }
-*/
-
             return ret;
         }
 
@@ -684,7 +663,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     .AsNoTracking().FirstOrDefaultAsync();
             string pic = "https://wxoa.snowmeet.top/0.png";
             //string url = "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_list\" href=\"#\" >点击查看</a>";
-            string url = "https://snowmeet.wanlonghuaxue.com/mapp/open_mapp_page.html?path=pages/mine/ticket/ticket_list&query=";
+            string url = "https://snowmeet.wanlonghuaxue.com/mapp/open_mapp_page.html?path=pages/mine/ticket/ticket_list&query=&version=trail";
             if (canGenerate)
             {
                 string code = Util.GetRandomCode(9);
