@@ -214,7 +214,6 @@ namespace SnowmeetOfficialAccount.Controllers
 
 
         }
-
         [HttpPost]
         public async Task<ActionResult<string>> PushMessage([FromQuery] string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
@@ -269,12 +268,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
 
             }
-            //try
-            //{
             XmlDocument xmlD = new XmlDocument();
             xmlD.LoadXml(body);
             XmlNode root = xmlD.SelectSingleNode("//xml");
-
             string eventStr = "";
             string eventKey = "";
             string content = "";
@@ -292,7 +288,6 @@ namespace SnowmeetOfficialAccount.Controllers
                 msgId = root.SelectSingleNode("MsgId").InnerText.Trim();
                 msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
             }
-
             OARecevie msg = new OARecevie()
             {
                 id = 0,
@@ -1122,13 +1117,13 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 title = "恭喜注册为易龙雪聚的新会员";
                 pic = "https://mini.snowmeet.top/images/welcome_new.jpg";
-                url = "";
+                url = "https://mini.snowmeet.top/mapp/register/register";
             }
             else if (member.cell == null)
             {
                 title = "请验证您的手机号";
                 pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
-                url = "";
+                url = "https://mini.snowmeet.top/mapp/register/register";
             }
             else
             {
