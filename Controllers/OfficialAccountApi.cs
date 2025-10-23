@@ -308,6 +308,14 @@ namespace SnowmeetOfficialAccount.Controllers
             };
             await _context.oARecevie.AddAsync(msg);
             await _context.SaveChangesAsync();
+            try
+            {
+                await SyncMemberInfo(msg.FromUserName.Trim());
+            }
+            catch
+            {
+                
+            }
             ret = await DealMessage(msg);
             /*
             try
@@ -331,7 +339,7 @@ namespace SnowmeetOfficialAccount.Controllers
 */
 
             return ret;
-        }
+            }
 
         [HttpGet]
         public async Task SyncMemberInfo(string openId)
