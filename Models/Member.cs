@@ -21,7 +21,7 @@ namespace SnowmeetOfficialAccount.Models
         public int? following_wechat { get; set; } = null;
         public string member_type { get; set; } = "wechat";
         public DateTime? update_date { get; set; } = null;
-        public DateTime create_date { get; set; }
+        public DateTime create_date { get; set; } = DateTime.Now;
         [NotMapped]
         public bool isNew { get; set; } = false;
         public string GetNum(string type)

@@ -14,7 +14,7 @@ namespace SnowmeetOfficialAccount.Models
         public int valid { get; set; } = 1;
         public string memo { get; set; } = "";
         public DateTime? update_date { get; set; } = null;
-        public DateTime create_date { get; set; }
+        public DateTime create_date { get; set; } = DateTime.Now;
         [ForeignKey("member_id")]
         public Member member { get; set; }
 
