@@ -23,7 +23,7 @@ namespace SnowmeetOfficialAccount.Controllers
 {
     [Route("api/[controller]/[Action]")]
     [ApiController]
-    public class OfficialAccountApi:ControllerBase
+    public class OfficialAccountApi : ControllerBase
     {
         private readonly AppDBContext _context;
 
@@ -33,9 +33,9 @@ namespace SnowmeetOfficialAccount.Controllers
 
         private readonly MemberController _memberHelper;
 
-        
 
-        
+
+
         public OfficialAccountApi(AppDBContext context, IConfiguration config)
         {
             _context = context;
@@ -211,10 +211,9 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 return "";
             }
-            
+
 
         }
-
         [HttpPost]
         public async Task<ActionResult<string>> PushMessage([FromQuery] string signature,
             [FromQuery] string timestamp, [FromQuery] string nonce)
@@ -269,12 +268,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
 
             }
-            //try
-            //{
             XmlDocument xmlD = new XmlDocument();
             xmlD.LoadXml(body);
             XmlNode root = xmlD.SelectSingleNode("//xml");
-
             string eventStr = "";
             string eventKey = "";
             string content = "";
@@ -292,7 +288,6 @@ namespace SnowmeetOfficialAccount.Controllers
                 msgId = root.SelectSingleNode("MsgId").InnerText.Trim();
                 msgType = root.SelectSingleNode("MsgType").InnerText.Trim();
             }
-
             OARecevie msg = new OARecevie()
             {
                 id = 0,
@@ -317,27 +312,6 @@ namespace SnowmeetOfficialAccount.Controllers
                 
             }
             ret = await DealMessage(msg);
-            /*
-            try
-            {
-                await SyncMemberInfo(msg.FromUserName.Trim());
-                //await SyncUserInfo(msg.FromUserName.Trim());
-                //ret = "suc";
-            }
-            catch (Exception err)
-            {
-                ret = err.ToString().Trim();
-            }
-            ret = await DealMessage(msg);
-                /*
-
-            }
-            catch
-            {
-
-            }
-*/
-
             return ret;
             }
 
@@ -408,10 +382,10 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     return;
                 }
-                
+
                 if (memberList[0].wechatUnionId == null || memberList[0].wechatUnionId.Trim().Equals(""))
                 {
-                    
+
                     UserInfo info = GetUserInfoFromWechat(openId.Trim());
                     if (!info.unionid.Trim().Equals(""))
                     {
@@ -482,8 +456,8 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
             }
             catch
-            { 
-            
+            {
+
             }
             try
             {
@@ -501,8 +475,8 @@ namespace SnowmeetOfficialAccount.Controllers
                 }
             }
             catch
-            { 
-            
+            {
+
             }
             return user;
         }
@@ -654,7 +628,133 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
         }
+        [NonAction]
+        public async Task<string> DealGetTicket(OARecevie receiveMsg, string[] keyArr)
+        {
+            int templateId = int.Parse(keyArr[1]);
+            string channel = keyArr[2].Trim();
+            MemberController _memberHelper = new MemberController(_context, _config);
+            Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "领取优惠券");
+            if (member == null)
+            {
+                return null;
+            }
+            bool canGenerate = false;
+            string failReason = "";
+            DateTime expireDate = DateTime.Parse("2026-04-30");
+            switch (templateId)
+            {
+                case 12:
+                    List<Ticket> tickets = await _context.ticket
+                        .Where(t => t.template_id == templateId && t.member_id == member.id
+                            && t.create_date.Date == DateTime.Now.Date && t.valid == 1)
+                        .AsNoTracking().ToListAsync();
+                    if (tickets == null || tickets.Count == 0)
+                    {
+                        canGenerate = true;
+                    }
+                    else
+                    {
+                        failReason = "该优惠券，每天只能领取一次";
+                    }
+                    break;
+                default:
+                    canGenerate = true;
+                    break;
+            }
+            TicketTemplate template = await _context.ticketTemplate.Where(t => t.id == templateId)
+                    .AsNoTracking().FirstOrDefaultAsync();
+            string pic = "https://wxoa.snowmeet.top/0.png";
+            //string url = "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/mine/ticket/ticket_list\" href=\"#\" >点击查看</a>";
+            string url = "https://snowmeet.wanlonghuaxue.com/mapp/open_mapp_page.html?path=pages/mine/ticket/ticket_list&query=&version=trail";
+            if (canGenerate)
+            {
+                string code = Util.GetRandomCode(9);
+                Ticket dupTicket = await _context.ticket.Where(t => t.code.Trim().Equals(code.Trim()))
+                    .AsNoTracking().FirstOrDefaultAsync();
+                for (int times = 0; times < 100 && dupTicket != null; times++)
+                {
+                    code = Util.GetRandomCode(9);
+                    dupTicket = await _context.ticket.Where(t => t.code.Trim().Equals(code.Trim()))
+                        .AsNoTracking().FirstOrDefaultAsync();
+                }
 
+                Ticket ticket = new Ticket()
+                {
+                    code = code.Trim(),
+                    name = template.name,
+                    memo = template.memo,
+                    open_id = receiveMsg.FromUserName.Trim(),
+                    member_id = member.id,
+                    oper_open_id = receiveMsg.FromUserName.Trim(),
+                    shared = 0,
+                    printed = 0,
+                    used = 0,
+                    template_id = template.id,
+                    miniapp_recept_path = "",
+                    create_date = DateTime.Now,
+                    channel = channel,
+                    valid = 1,
+                    expire_date = expireDate
+                };
+                await _context.AddAsync(ticket);
+                await _context.SaveChangesAsync();
+                string title = template.name.Trim() + " 已经领取成功";
+                //string pic = "";
+                //string url = "";
+                OASent sent = new OASent()
+                {
+                    id = 0,
+                    is_service = 0,
+                    FromUserName = _settings.originalId.Trim(),
+                    ToUserName = receiveMsg.FromUserName,
+                    origin_message_id = receiveMsg.id,
+                    MsgType = "news",
+                    newsContentArray = new OASent.NewsContent[] { new OASent.NewsContent()
+                    {
+                        title = title,
+                        picUrl = pic,
+                        description = "领取成功，请在本雪季使用。",
+                        url = url
+                    } }
+                };
+                sent.Content = sent.GetXmlDocument().InnerXml.Trim();
+                await _context.oASent.AddAsync(sent);
+                await _context.SaveChangesAsync();
+                return sent.Content;
+            }
+            else
+            {
+                string title = template.name.Trim();// + " " + failReason;
+                //string pic = "";
+                //string url = "";
+                OASent sent = new OASent()
+                {
+                    id = 0,
+                    is_service = 0,
+                    FromUserName = _settings.originalId.Trim(),
+                    ToUserName = receiveMsg.FromUserName,
+                    origin_message_id = receiveMsg.id,
+                    MsgType = "news",
+                    newsContentArray = new OASent.NewsContent[] { new OASent.NewsContent()
+                    {
+                        title = title,
+                        picUrl = pic,
+                        description = failReason,
+                        url = url
+                    } }
+                };
+                sent.Content = sent.GetXmlDocument().InnerXml.Trim();
+                await _context.oASent.AddAsync(sent);
+                await _context.SaveChangesAsync();
+                return sent.Content;
+            }
+        }
+        [NonAction]
+        public async Task<string> ImportTicket(OARecevie receiveMsg, string[] keyArr)
+        {
+            return null;
+        }
         [NonAction]
         public async Task<string> DealEventKeyAction(OARecevie receiveMsg, string key)
         {
@@ -667,6 +767,12 @@ namespace SnowmeetOfficialAccount.Controllers
             string[] keyArr = key.Trim().Split('_');
             switch (keyArr[0].Trim())
             {
+                case "getticket":
+                    ret = await DealGetTicket(receiveMsg, keyArr);
+                    break;
+                case "import_ticket":
+                    ret = await ImportTicket(receiveMsg, keyArr);
+                    break;
                 case "me":
                     ret = await Me(receiveMsg, keyArr);
                     break;
@@ -729,7 +835,7 @@ namespace SnowmeetOfficialAccount.Controllers
                             is_service = 0
                         };
                         ret = reply.GetXmlDocument().InnerXml.Trim();
-                        
+
                     }
                     break;
             }
@@ -778,7 +884,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 memberId = int.Parse(eventArr[1].Trim());
             }
 
-            string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort=" 
+            string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort="
                 + Util.UrlEncode(resort) + "&memberId=" + memberId + "\" href=\"#\" >点击此处</a>进入小程序操作。";
             return await GetSendTextMessageXml(content, receiveMsg);
         }
@@ -960,7 +1066,7 @@ namespace SnowmeetOfficialAccount.Controllers
             ret = reply.GetXmlDocument().InnerXml.Trim();
 
             return ret;
-            
+
         }
 
         [NonAction]
@@ -999,7 +1105,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             scanQrCode.scaned = 1;
             scanQrCode.scan_time = DateTime.Now;
-            
+
             MemberController _memberHelper = new MemberController(_context, _config);
             Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "店铺接待，扫码关注公众号");
             if (member != null)
@@ -1019,16 +1125,16 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 title = "恭喜注册为易龙雪聚的新会员";
                 pic = "https://mini.snowmeet.top/images/welcome_new.jpg";
-                url = "";
+                url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
             }
             else if (member.cell == null)
             {
                 title = "请验证您的手机号";
                 pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
-                url = "";
+                url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
             }
             else
-            { 
+            {
                 title = "请等待店员开单";
                 pic = "https://mini.snowmeet.top/images/wait.jpg";
                 url = "";
@@ -1062,7 +1168,7 @@ namespace SnowmeetOfficialAccount.Controllers
             int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
             ShopSaleInteract scan = await _context.shopSaleInteract.FindAsync(id);
             scan.scan = 1;
-            scan.scaner_oa_open_id = receiveMsg.FromUserName.Trim() ;//user.open_id.Trim();
+            scan.scaner_oa_open_id = receiveMsg.FromUserName.Trim();//user.open_id.Trim();
             scan.scaner_union_id = member.GetNum("wechat_unionid");
             _context.Entry(scan).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -1070,7 +1176,7 @@ namespace SnowmeetOfficialAccount.Controllers
             bool isMember = (member.GetNum("cell").Trim().Equals("") ? false : true)
                 && (member.GetNum("wechat_mini_openid").Trim().Equals("") ? false : true);
 
-            switch(scan.scan_type.Trim())
+            switch (scan.scan_type.Trim())
             {
                 case "nanshanskipass":
                     if (!isMember)
@@ -1176,7 +1282,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 miniAppPath = "/pages/payment/pay_recept?id=" + id.ToString();
             }
-            message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。"; 
+            message = message + "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里查看</a>。";
             return await GetTextMessageXml(receiveMsg, message);
         }
         [NonAction]
@@ -1190,7 +1296,7 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             string miniAppPath = "/pages/payment/rent_pay_add?id=" + id.ToString();
             string msg = "您的租赁订单需要补交一笔费用。原因：" + addPay.reason.Trim() + " 金额：" + addPay.amount.ToString() + "元。";
-            msg += "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里支付</a>。"; 
+            msg += "<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"" + miniAppPath + "\" >点击这里支付</a>。";
             return await GetTextMessageXml(receiveMsg, msg);
         }
         [HttpGet]
@@ -1202,8 +1308,20 @@ namespace SnowmeetOfficialAccount.Controllers
             OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
             return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim();
         }
-
-
+        [HttpGet]
+        public ActionResult<string> GetOALimitQrCode(string content, string token)
+        {
+            string sysToken = GetAccessToken().Trim();
+            if (token.Trim().Equals(sysToken.Trim()) == false)
+            {
+                return NoContent();
+            }
+            string jsonStr = "{ \"action_name\": \"QR_LIMIT_STR_SCENE\", \"action_info\": {\"scene\": {\"scene_str\": \"" + content.Trim() + "\"}}}";
+            string postUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + sysToken;
+            string ret = Util.GetWebContent(postUrl, jsonStr);
+            OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
+            return Ok("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim());
+        }
         [NonAction]
         public string[] GetSubscribedOpenId()
         {
@@ -1250,20 +1368,20 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     continue;
                 }
-                string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + token + "&openid=" + openId +"&lang=zh_CN";
+                string url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=" + token + "&openid=" + openId + "&lang=zh_CN";
                 string content = Util.GetWebContent(url);
                 OAUserInfo info = JsonConvert.DeserializeObject<OAUserInfo>(content);
                 info.tagid_list_str = "";
                 await _context.oaUserInfo.AddAsync(info);
                 await _context.SaveChangesAsync();
-                
-                
-                
+
+
+
             }
 
         }
         [NonAction]
-        public async Task<WebApiLog> PerformRequest(string url, string header, string payload, 
+        public async Task<WebApiLog> PerformRequest(string url, string header, string payload,
             string method = "GET", string source = "易龙雪聚小程序", string purpose = "", string memo = "")
         {
             WebApiLog log = new WebApiLog()
@@ -1281,14 +1399,14 @@ namespace SnowmeetOfficialAccount.Controllers
             await _context.SaveChangesAsync();
             try
             {
-                switch(method.ToLower())
+                switch (method.ToLower())
                 {
                     case "post":
                         log.response = Util.GetWebContent(log.request_url, log.payload, "application/json");
-                    break;
+                        break;
                     default:
                         log.response = Util.GetWebContent(log.request_url);
-                    break;
+                        break;
                 }
             }
             catch
@@ -1315,14 +1433,14 @@ namespace SnowmeetOfficialAccount.Controllers
                 return;
             }
             List<MemberSocialAccount> taskMsaList = await _context.memberSocailAccount
-                .Where(m => (m.num.Trim().Equals(task.open_id.Trim()) && m.type.Trim().Equals("wechat_mini_openid") ))
+                .Where(m => (m.num.Trim().Equals(task.open_id.Trim()) && m.type.Trim().Equals("wechat_mini_openid")))
                 .AsNoTracking().ToListAsync();
             if (taskMsaList.Count == 0)
             {
                 return;
             }
             List<MemberSocialAccount> scanMsaList = await _context.memberSocailAccount
-                .Where(m => (m.num.Trim().Equals(scan.scaner_oa_open_id ) && m.type.Trim().Equals("wechat_oa_openid") ))
+                .Where(m => (m.num.Trim().Equals(scan.scaner_oa_open_id) && m.type.Trim().Equals("wechat_oa_openid")))
                 .AsNoTracking().ToListAsync();
             if (scanMsaList.Count == 0)
             {

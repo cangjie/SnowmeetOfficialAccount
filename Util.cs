@@ -101,5 +101,14 @@ namespace SnowmeetOfficialAccount
             long num = rnd.NextInt64(0, max);
             return num.ToString().PadLeft(digit, '0');
         }
+        public static string GetRandomCode(int digit)
+        {
+            string code = "";
+            for (int i = 0; i < digit; i++)
+            {
+                code = code + (new Random()).Next(0, 10).ToString();
+            }
+            return code;
+        }
     }
 }

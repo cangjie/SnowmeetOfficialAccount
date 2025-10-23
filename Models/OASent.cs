@@ -81,7 +81,7 @@ namespace SnowmeetOfficialAccount.Models
                         picUrlNode.InnerXml = "<![CDATA[" + news.picUrl + "]]>";
                         itemNode.AppendChild(picUrlNode);
                         XmlNode urlNode = xmlD.CreateNode(XmlNodeType.Element, "Url", "");
-                        picUrlNode.InnerXml = "<![CDATA[" + news.url + "]]>";
+                        urlNode.InnerXml = "<![CDATA[" + news.url + "]]>";
                         itemNode.AppendChild(urlNode);
                         n.AppendChild(itemNode);
                     }
