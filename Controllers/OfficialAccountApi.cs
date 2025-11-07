@@ -319,7 +319,7 @@ namespace SnowmeetOfficialAccount.Controllers
         public async Task SyncMemberInfo(string openId)
         {
             var msaList = await _context.memberSocailAccount
-                .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId)))
+                .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId) && m.valid == 1))
                 .AsNoTracking().ToListAsync();
             int memberId = 0;
             string unionId = "";
@@ -335,7 +335,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 if (unionId != null && !unionId.Trim().Equals(""))
                 {
                     msaList = await _context.memberSocailAccount
-                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(unionId)))
+                        .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(unionId) && m.valid == 1))
                         .AsNoTracking().ToListAsync();
                     if (msaList != null && msaList.Count > 0)
                     {
@@ -1467,7 +1467,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string json = "{"
                 + "\"touser\": \"" + openId.Trim() + "\", "
                 + "\"template_id\": \"-FxfVcWYFq079YIWfaT6khxQn6__b-CD9Xty_M_iP1U\", "
-                + "\"url\": \"https://mini.snowmeet.top\", "
+                + "\"url\": \"https://snowmeet.top\", "
                 + "\"mini_program\": {"
                 + "\"appid\": \"wxd1310896f2aa68bb\", "
                 + "\"pagepath\": \"pages/index\" "
