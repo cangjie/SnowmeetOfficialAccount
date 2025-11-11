@@ -783,6 +783,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "recept":
                     ret = await ScanReceptNew(receiveMsg, keyArr);
                     break;
+                case "care":
+                    ret = await CarePickVeri(receiveMsg, keyArr);
+                    break;
                 case "shop":
                 case "nanshanskipass":
                 case "maintainreturn":
@@ -1092,6 +1095,28 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
 
+        }
+        [NonAction]
+        public async Task<string> CarePickVeri(OARecevie receiveMsg, string[] keyArr)
+        {
+            int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            ScanQrCode scanQrCode = await _context.scanQrCode.Where(s => s.id == id)
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (scanQrCode == null)
+            {
+                return "success";
+            }
+            scanQrCode.scaned = 1;
+            scanQrCode.scan_time = DateTime.Now;
+            MemberController _memberHelper = new MemberController(_context, _config);
+            Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "养护取板验证");
+            if (member != null)
+            {
+                scanQrCode.scaner_member_id = member.id;
+            }
+            _context.Entry(scanQrCode).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return "success";
         }
         [NonAction]
         public async Task<string> ScanReceptNew(OARecevie receiveMsg, string[] keyArr)
