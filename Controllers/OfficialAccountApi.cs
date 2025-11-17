@@ -1154,16 +1154,24 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             else if (member.cell == null)
             {
+                title = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/reg\" >点此注册</a>。";
+
+                /*
                 title = "请验证您的手机号";
                 pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
                 url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
+                */
             }
             else
             {
                 title = "请等待店员开单";
+                /*
+                
                 pic = "https://mini.snowmeet.top/images/wait.jpg";
                 url = "";
+                */
             }
+            /*
             OASent sent = new OASent()
             {
                 id = 0,
@@ -1180,10 +1188,12 @@ namespace SnowmeetOfficialAccount.Controllers
                     url = url
                 } }
             };
-            sent.Content = sent.GetXmlDocument().InnerXml.Trim();
-            await _context.oASent.AddAsync(sent);
-            await _context.SaveChangesAsync();
-            return sent.Content;
+            */
+            string sendXML = await GetTextMessageXml(receiveMsg, title);
+            
+            //await _context.oASent.AddAsync(sendXML);
+            //await _context.SaveChangesAsync();
+            return sendXML;
         }
         [NonAction]
         public async Task<string> ScanRecept(OARecevie receiveMsg, string[] keyArr)
