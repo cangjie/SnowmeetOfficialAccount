@@ -55,6 +55,7 @@ namespace SnowmeetOfficialAccount.Models
             }
         }
 
+        public List<SocialAccountForJob>? jobAccounts { get; set; }
         
         public List<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
 

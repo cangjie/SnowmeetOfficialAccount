@@ -33,7 +33,7 @@ namespace SnowmeetOfficialAccount.Controllers
             OfficialAccountApi.UserInfo? userInfo = null;
             string? unionId = null;
             int? memberId = null;
-            List<MemberSocialAccount> listMsaOfficial = await _db.memberSocailAccount
+            List<MemberSocialAccount> listMsaOfficial = await _db.memberSocialAccount
                 .Where(m => m.num.Trim().Equals(openId.Trim()) && m.type.Trim().Equals("wechat_oa_openid"))
                 .AsNoTracking().ToListAsync();
             if (listMsaOfficial != null && listMsaOfficial.Count > 0)
@@ -49,7 +49,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 {
                     unionId = userInfo.unionid.Trim();
                 }
-                List<MemberSocialAccount> listUnionId = await _db.memberSocailAccount
+                List<MemberSocialAccount> listUnionId = await _db.memberSocialAccount
                     .Where(m => m.type.Equals("wechat_unionid") && m.valid == 1 && m.num.Equals(unionId) && !unionId.Trim().Equals(""))
                     .AsNoTracking().ToListAsync();
                 if (listUnionId != null && listUnionId.Count > 0)
@@ -64,7 +64,7 @@ namespace SnowmeetOfficialAccount.Controllers
                         num = openId,
                         create_date = DateTime.Now
                     };
-                    await _db.memberSocailAccount.AddAsync(msaOA);
+                    await _db.memberSocialAccount.AddAsync(msaOA);
                     await _db.SaveChangesAsync();
                 }
             }
@@ -119,7 +119,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task AddMemberInfo(int memberId, string num, string type)
         {
-            List<MemberSocialAccount> msaList = await _db.memberSocailAccount
+            List<MemberSocialAccount> msaList = await _db.memberSocialAccount
                 .Where(m => m.type.Equals(type) && m.member_id == memberId).ToListAsync();
             bool exists = false;
             for (int i = 0; i < msaList.Count; i++)
@@ -145,7 +145,7 @@ namespace SnowmeetOfficialAccount.Controllers
                             current_value = "1",
                             is_manual = 0
                         };
-                        _db.memberSocailAccount.Entry(msa).State = EntityState.Modified;
+                        _db.memberSocialAccount.Entry(msa).State = EntityState.Modified;
                         await _db.dataLog.AddAsync(log);
                     }
                 }
@@ -170,7 +170,7 @@ namespace SnowmeetOfficialAccount.Controllers
                                 current_value = "0",
                                 is_manual = 0
                             };
-                            _db.memberSocailAccount.Entry(msa).State = EntityState.Modified;
+                            _db.memberSocialAccount.Entry(msa).State = EntityState.Modified;
                             await _db.dataLog.AddAsync(log);
                         }
                     }
@@ -187,7 +187,7 @@ namespace SnowmeetOfficialAccount.Controllers
                     num = num,
                     create_date = DateTime.Now
                 };
-                await _db.memberSocailAccount.AddAsync(msa);
+                await _db.memberSocialAccount.AddAsync(msa);
             }
             await _db.SaveChangesAsync();
         }
@@ -247,7 +247,7 @@ namespace SnowmeetOfficialAccount.Controllers
             type = type.Trim();
             int memberId = 0;
 
-            var msaList = await _db.memberSocailAccount
+            var msaList = await _db.memberSocialAccount
                         .Where(a => (a.valid == 1 && a.num.Trim().Equals(num) && a.type.Trim().Equals(type)))
                         .OrderByDescending(a => a.id).ToListAsync();
             if (msaList.Count == 0)

@@ -21,16 +21,19 @@ namespace SnowmeetOfficialAccount
         public DbSet<ShopSaleInteract> shopSaleInteract { get; set; }
         public DbSet<OAUserInfo> oaUserInfo { get; set; }
         public DbSet<Member> member { get; set; }
-        public DbSet<MemberSocialAccount> memberSocailAccount { get; set; }
+        public DbSet<MemberSocialAccount> memberSocialAccount { get; set; }
         public DbSet<Ticket> ticket { get; set; }
         public DbSet<TicketTemplate> ticketTemplate { get; set; }
         public DbSet<RentAdditionalPayment> rentAdditionalPayment { get; set; }
         public DbSet<WebApiLog> webApiLog { get; set; }
         public DbSet<MaintainLive> maintainLive { get; set; }
-
+        public DbSet<SocialAccountForJob> socialAccountForJob { get; set; }
+        public DbSet<MiniSession> miniSession { get; set; }
         ///new season
         public DbSet<ScanQrCode> scanQrCode { get; set; }
         public DbSet<CoreDataModLog> dataLog { get; set; }
+        public DbSet<Staff> staff { get; set; }
+        public DbSet<StaffSocialAccount> staffSocialAccount { get; set; }
         
     }
 }

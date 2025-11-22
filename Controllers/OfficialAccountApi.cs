@@ -318,7 +318,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [HttpGet]
         public async Task SyncMemberInfo(string openId)
         {
-            var msaList = await _context.memberSocailAccount
+            var msaList = await _context.memberSocialAccount
                 .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId) && m.valid == 1))
                 .AsNoTracking().ToListAsync();
             int memberId = 0;
@@ -334,7 +334,7 @@ namespace SnowmeetOfficialAccount.Controllers
                 unionId = info.unionid.Trim();
                 if (unionId != null && !unionId.Trim().Equals(""))
                 {
-                    msaList = await _context.memberSocailAccount
+                    msaList = await _context.memberSocialAccount
                         .Where(m => (m.type.Trim().Equals("wechat_unionid") && m.num.Trim().Equals(unionId) && m.valid == 1))
                         .AsNoTracking().ToListAsync();
                     if (msaList != null && msaList.Count > 0)
@@ -397,7 +397,7 @@ namespace SnowmeetOfficialAccount.Controllers
                             num = info.unionid.Trim(),
                             valid = 1
                         };
-                        await _context.memberSocailAccount.AddAsync(msaUnionId);
+                        await _context.memberSocialAccount.AddAsync(msaUnionId);
                         await _context.SaveChangesAsync();
                     }
                 }
@@ -411,7 +411,7 @@ namespace SnowmeetOfficialAccount.Controllers
                         num = openId.Trim(),
                         valid = 1
                     };
-                    await _context.memberSocailAccount.AddAsync(msaOaOpenId);
+                    await _context.memberSocialAccount.AddAsync(msaOaOpenId);
                     await _context.SaveChangesAsync();
                 }
             }
@@ -563,7 +563,7 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task SetFollowingStatus(string openId, bool following)
         {
-            MemberSocialAccount msa = await _context.memberSocailAccount
+            MemberSocialAccount msa = await _context.memberSocialAccount
                 .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(openId.Trim()) && m.valid == 1))
                 .AsNoTracking().FirstOrDefaultAsync();
             if (msa == null)
@@ -1380,6 +1380,23 @@ namespace SnowmeetOfficialAccount.Controllers
             OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
             return Ok("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim());
         }
+        [HttpGet]
+        public async Task<ActionResult<string>> GetOALimitQrCodeBySessionKey(string content, string sessionKey)
+        {
+            string sysToken = GetAccessToken().Trim();
+            StaffController _staffHelper = new StaffController(_context);
+            sessionKey = Util.UrlDecode(sessionKey.Trim());
+            Staff staff = await _staffHelper.GetStaffBySessionKey(sessionKey);
+            if (staff == null || staff.title_level < 100)
+            {
+                return BadRequest();
+            }
+            string jsonStr = "{ \"action_name\": \"QR_LIMIT_STR_SCENE\", \"action_info\": {\"scene\": {\"scene_str\": \"" + content.Trim() + "\"}}}";
+            string postUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=" + sysToken;
+            string ret = Util.GetWebContent(postUrl, jsonStr);
+            OAQRTicket t = JsonConvert.DeserializeObject<OAQRTicket>(ret);
+            return Ok("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + t.ticket.Trim());
+        }
         [NonAction]
         public string[] GetSubscribedOpenId()
         {
@@ -1490,14 +1507,14 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 return;
             }
-            List<MemberSocialAccount> taskMsaList = await _context.memberSocailAccount
+            List<MemberSocialAccount> taskMsaList = await _context.memberSocialAccount
                 .Where(m => (m.num.Trim().Equals(task.open_id.Trim()) && m.type.Trim().Equals("wechat_mini_openid")))
                 .AsNoTracking().ToListAsync();
             if (taskMsaList.Count == 0)
             {
                 return;
             }
-            List<MemberSocialAccount> scanMsaList = await _context.memberSocailAccount
+            List<MemberSocialAccount> scanMsaList = await _context.memberSocialAccount
                 .Where(m => (m.num.Trim().Equals(scan.scaner_oa_open_id) && m.type.Trim().Equals("wechat_oa_openid")))
                 .AsNoTracking().ToListAsync();
             if (scanMsaList.Count == 0)
@@ -1508,7 +1525,7 @@ namespace SnowmeetOfficialAccount.Controllers
             {
                 return;
             }
-            List<MemberSocialAccount> oaList = await _context.memberSocailAccount
+            List<MemberSocialAccount> oaList = await _context.memberSocialAccount
                 .Where(m => (m.member_id == taskMsaList[0].member_id && m.type.Trim().Equals("wechat_oa_openid")))
                 .AsNoTracking().ToListAsync();
             if (oaList.Count == 0)
