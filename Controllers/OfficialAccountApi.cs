@@ -819,6 +819,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "reserveskipass":
                     ret = await ReserveSkipass(receiveMsg);
                     break;
+                case "reserveskipassbystaff":
+                    ret = await ReserveSkipassByStaff(receiveMsg);
+                    break;
                 case "contact":
                     ret = await GetContact(receiveMsg);
                     break;
@@ -889,6 +892,26 @@ namespace SnowmeetOfficialAccount.Controllers
 
             string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort="
                 + Util.UrlEncode(resort) + "&memberId=" + memberId + "\" href=\"#\" >点击此处</a>进入小程序操作。";
+            return await GetSendTextMessageXml(content, receiveMsg);
+        }
+        [NonAction]
+        public async Task<string> ReserveSkipassByStaff(OARecevie receiveMsg)
+        {
+            string[] eventArr = receiveMsg.EventKey.Split('_');
+            int staffId = 0;
+            string resort = "万龙";
+            if (eventArr.Length == 3)
+            {
+                staffId = int.Parse(eventArr[2].Trim());
+                resort = eventArr[1].Trim();
+            }
+            else
+            {
+                staffId = int.Parse(eventArr[1].Trim());
+            }
+
+            string content = "订雪票，送打蜡。请<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"pages/ski_pass/ski_pass_selector?resort="
+                + Util.UrlEncode(resort) + "&staffId=" + staffId.ToString() + "\" href=\"#\" >点击此处</a>进入小程序操作。";
             return await GetSendTextMessageXml(content, receiveMsg);
         }
 
