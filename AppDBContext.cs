@@ -10,6 +10,7 @@ namespace SnowmeetOfficialAccount
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MiniSession>().HasKey(m => new { m.session_key, m.session_type });
             //modelBuilder.Entity<MemberSocialAccount>().HasOne<Member>()
             //    .WithMany(m => m.memberSocialAccounts).HasForeignKey(m => m.member_id);
         }
