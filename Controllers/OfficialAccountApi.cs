@@ -1156,6 +1156,16 @@ namespace SnowmeetOfficialAccount.Controllers
             }
             scanQrCode.scaned = 1;
             scanQrCode.scan_time = DateTime.Now;
+            MemberController _memberHelper = new MemberController(_context, _config);
+            Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "店铺接待，扫码关注公众号");
+            if (member != null)
+            {
+                scanQrCode.scaner_member_id = member.id;
+                if (member.cell != null)
+                {
+                    scanQrCode.cell = member.cell.Trim();
+                }
+            }
             _context.Entry(scanQrCode).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             string sendXML = await GetTextMessageXml(receiveMsg, "请等待店员发卡");
