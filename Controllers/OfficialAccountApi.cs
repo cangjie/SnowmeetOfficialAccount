@@ -842,7 +842,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     ret = await CarePickVeri(receiveMsg, keyArr);
                     break;
                 case "shop":
+                    break;
                 case "nanshanskipass":
+                    ret = await ScanVeriNanshanSkipass(receiveMsg, keyArr);
+                    break;
                 case "maintainreturn":
                     ret = await ScanRecept(receiveMsg, keyArr);
                     await SendMaintainPickVerCode(int.Parse(keyArr[keyArr.Length - 1]));
@@ -1183,6 +1186,35 @@ namespace SnowmeetOfficialAccount.Controllers
             _context.Entry(scanQrCode).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return "success";
+        }
+        [NonAction]
+        public async Task<string> ScanVeriNanshanSkipass(OARecevie receiveMsg, string[] keyArr)
+        {
+            int id = int.Parse(keyArr[keyArr.Length - 1].Trim());
+            ScanQrCode scanQrCode = await _context.scanQrCode.Where(s => s.id == id)
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (scanQrCode == null)
+            {
+                return "success";
+            }
+            scanQrCode.scaned = 1;
+            scanQrCode.scan_time = DateTime.Now;
+            MemberController _memberHelper = new MemberController(_context, _config);
+            Member member = await _memberHelper.GetMemberByOfficialAccountOpenId(receiveMsg.FromUserName, "店铺接待，扫码关注公众号");
+            if (member != null)
+            {
+                scanQrCode.scaner_member_id = member.id;
+                if (member.cell != null)
+                {
+                    scanQrCode.cell = member.cell.Trim();
+                }
+            }
+            _context.Entry(scanQrCode).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            string sendXML = await GetTextMessageXml(receiveMsg, "请等待店员发卡");
+            //await _context.oASent.AddAsync(sendXML);
+            //await _context.SaveChangesAsync();
+            return sendXML;
         }
         [NonAction]
         public async Task<string> ScanReceptNew(OARecevie receiveMsg, string[] keyArr)
