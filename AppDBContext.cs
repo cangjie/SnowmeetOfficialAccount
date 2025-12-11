@@ -35,6 +35,7 @@ namespace SnowmeetOfficialAccount
         public DbSet<CoreDataModLog> dataLog { get; set; }
         public DbSet<Staff> staff { get; set; }
         public DbSet<StaffSocialAccount> staffSocialAccount { get; set; }
+        public DbSet<TemplateMessage> templateMessage { get; set; }
         
     }
 }

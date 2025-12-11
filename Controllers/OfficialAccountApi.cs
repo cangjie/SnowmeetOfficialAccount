@@ -76,7 +76,62 @@ namespace SnowmeetOfficialAccount.Controllers
             };
             SendServiceMessage(msg);
         }
-
+        [HttpGet]
+        public async Task<ActionResult<TemplateMessage>> SendTemplateMessage(int memberId, string templateId, string first, string keywords, string remark, string url, string sessionKey)
+        {
+            string token = GetAccessToken().Trim();
+            //miniAppOpenId = Util.UrlDecode(miniAppOpenId);
+            templateId = Util.UrlDecode(templateId);
+            first = Util.UrlDecode(first);
+            keywords = Util.UrlDecode(keywords);
+            remark = Util.UrlDecode(remark);
+            url = Util.UrlDecode(url);
+            sessionKey = Util.UrlDecode(sessionKey);
+            /*
+            UnicUser user = await  UnicUser.GetUnicUserAsync(sessionKey, _context);
+            if (user == null || !user.isAdmin)
+            {
+                return BadRequest();
+            }*/
+            Staff staff = await Util.GetStaffBySessionKey(_context, sessionKey);
+            if (staff == null || staff.title_level < 100)
+            {
+                return BadRequest();
+            }
+            MemberSocialAccount? msa = await _context.memberSocialAccount
+                .Where(m => m.member_id == memberId && m.valid == 1 && m.type == "wechat_oa_openid").AsNoTracking().FirstOrDefaultAsync();
+            if (msa == null)
+            {
+                return NoContent();
+            }
+            string openId = msa.num.Trim();
+            string[] keywordArr = keywords.Split('|');
+            string keywordJson = "";
+            for (int i = 1; i <= keywordArr.Length; i++)
+            {
+                keywordJson = keywordJson  + ",\"keyword" + i.ToString() + "\": { \"value\": \"" + keywordArr[i - 1].Trim() + "\" , \"color\": \"#173177\"}";
+            }
+            keywordJson = "\"first\": { \"value\": \"" + first + "\", \"color\": \"#000000\" } " + keywordJson
+                + ", \"remark\": { \"value\": \"" + remark + "\", \"color\": \"#000000\" }";
+            string postJson = "{ \"touser\": \"" + openId.Trim() + "\", \"template_id\" : \"" + templateId.Trim() + "\", \"url\": \"" + url.Trim() + "\", "
+                + " \"topcolor\": \"#FF0000\", \"data\":  {" + keywordJson + "}}";
+            string postUrl = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + token.Trim();
+            string ret = Util.GetWebContent(postUrl, postJson);
+            TemplateMessage msg = new TemplateMessage()
+            {
+                from = _config.GetSection("Settings").GetSection("OriginalId").Value.Trim(),
+                to = openId,
+                template_id = templateId,
+                first = first,
+                keywords = keywords,
+                remark = remark,
+                url = url,
+                ret_message = ret
+            };
+            await _context.AddAsync(msg);
+            await _context.SaveChangesAsync();
+            return Ok(msg);
+        }
         [NonAction]
         public string SendServiceMessage(OASent message)
         {
@@ -1061,12 +1116,9 @@ namespace SnowmeetOfficialAccount.Controllers
                 origin_message_id = receiveMsg.id,
                 is_service = 0
             };
-
             await _context.oASent.AddAsync(reply);
             await _context.SaveChangesAsync();
-
             string ret = reply.GetXmlDocument().InnerXml.Trim();
-
             return ret;
         }
 
@@ -1085,16 +1137,11 @@ namespace SnowmeetOfficialAccount.Controllers
                 origin_message_id = receiveMsg.id,
                 is_service = 0
             };
-
             await _context.oASent.AddAsync(reply);
             await _context.SaveChangesAsync();
-
             ret = reply.GetXmlDocument().InnerXml.Trim();
-
             return ret;
-
         }
-
         [NonAction]
         public async Task<string> SnowmeetStaffReg(OARecevie receiveMsg)
         {
@@ -1110,14 +1157,10 @@ namespace SnowmeetOfficialAccount.Controllers
                 origin_message_id = receiveMsg.id,
                 is_service = 0
             };
-
             await _context.oASent.AddAsync(reply);
             await _context.SaveChangesAsync();
-
             ret = reply.GetXmlDocument().InnerXml.Trim();
-
             return ret;
-
         }
         [NonAction]
         public async Task<string> CarePickVeri(OARecevie receiveMsg, string[] keyArr)
@@ -1178,44 +1221,12 @@ namespace SnowmeetOfficialAccount.Controllers
             else if (member.cell == null)
             {
                 title = "您目前还不是易龙雪聚会员，<a data-miniprogram-appid=\"wxd1310896f2aa68bb\" data-miniprogram-path=\"/pages/register/reg\" >点此注册</a>。";
-
-                /*
-                title = "请验证您的手机号";
-                pic = "https://mini.snowmeet.top/images/need_to_veri_num.jpg";
-                url = "https://mini.snowmeet.top/mapp/open_mapp_page.html?path=pages/register/reg";
-                */
             }
             else
             {
                 title = "请等待店员开单";
-                /*
-                
-                pic = "https://mini.snowmeet.top/images/wait.jpg";
-                url = "";
-                */
             }
-            /*
-            OASent sent = new OASent()
-            {
-                id = 0,
-                is_service = 0,
-                FromUserName = _settings.originalId.Trim(),
-                ToUserName = receiveMsg.FromUserName,
-                origin_message_id = receiveMsg.id,
-                MsgType = "news",
-                newsContentArray = new OASent.NewsContent[] { new OASent.NewsContent()
-                {
-                    title = title,
-                    picUrl = pic,
-                    description = "",
-                    url = url
-                } }
-            };
-            */
             string sendXML = await GetTextMessageXml(receiveMsg, title);
-            
-            //await _context.oASent.AddAsync(sendXML);
-            //await _context.SaveChangesAsync();
             return sendXML;
         }
         [NonAction]

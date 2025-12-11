@@ -2,6 +2,9 @@
 using System.Web;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
+using SnowmeetOfficialAccount.Models;
+using SnowmeetOfficialAccount.Controllers;
 namespace SnowmeetOfficialAccount
 {
     public class Util
@@ -109,6 +112,12 @@ namespace SnowmeetOfficialAccount
                 code = code + (new Random()).Next(0, 10).ToString();
             }
             return code;
+        }
+        public static async Task<Staff?> GetStaffBySessionKey(AppDBContext db, string sessionKey, string sessionType = "wechat_mini_openid")
+        {
+            StaffController staffHelper = new StaffController(db);
+            Staff staff = await staffHelper.GetStaffBySessionKey(sessionKey, sessionType);
+            return staff;
         }
     }
 }
