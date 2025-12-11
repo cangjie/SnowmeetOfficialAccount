@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using SnowmeetOfficialAccount.Models;
 using SnowmeetOfficialAccount;
-using Azure.Core;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
