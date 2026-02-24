@@ -882,6 +882,41 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "contact":
                     ret = await GetContact(receiveMsg);
                     break;
+                case "unipay":
+                    int orderId = int.Parse(keyArr[2].Trim());
+                    Models.Order order = await _context.order.Where(o => o.id == orderId)
+                        .AsNoTracking().Include(o => o.payments).ThenInclude(r => r.refunds)
+                        .FirstOrDefaultAsync();
+                    //int? memberId = null;
+                    if (order.member_id == null)
+                    {
+                        MemberSocialAccount msa = await _context.memberSocialAccount
+                            .Where(m => (m.type.Trim().Equals("wechat_oa_openid") && m.num.Trim().Equals(receiveMsg.FromUserName.Trim()) && m.valid == 1))
+                            .AsNoTracking().FirstOrDefaultAsync();
+                        if (msa != null)
+                        {
+                            order.member_id = msa.member_id;
+                            _context.order.Entry(order).State = EntityState.Modified;
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                    TicketController _tH = new TicketController(_context, _config);
+                    Ticket ticket = await _tH.CreateTicketByUnipayOrder(order);
+                    if (ticket != null)
+                    {
+                        OASent reply = new OASent()
+                        {
+                            id = 0,
+                            FromUserName = receiveMsg.ToUserName.Trim(),
+                            ToUserName = receiveMsg.FromUserName.Trim(),
+                            MsgType = "text",
+                            Content = "您已获得免费打蜡券一张。",
+                            origin_message_id = receiveMsg.id,
+                            is_service = 0
+                        };
+                        ret = reply.GetXmlDocument().InnerXml.Trim();    
+                    }
+                    break;
                 default:
                     if (keyArr[0].StartsWith("3"))
                     {

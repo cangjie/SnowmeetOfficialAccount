@@ -119,5 +119,26 @@ namespace SnowmeetOfficialAccount
             Staff staff = await staffHelper.GetStaffBySessionKey(sessionKey, sessionType);
             return staff;
         }
+        public static CoreDataModLog CreateCoreDataModLog(string table, string filed, int key, object? prev, object? curr, int? memberId, int? staffId, string scene, long? traceId = null)
+        {
+            if (traceId == null)
+            {
+                traceId = (DateTime.Now - DateTime.Parse("1970-1-1")).Ticks;
+            }
+            return new CoreDataModLog()
+            {
+                id = 0,
+                table_name = table,
+                field_name = filed,
+                key_value = key,
+                prev_value = prev == null ? "null" : prev.ToString(),
+                current_value = curr == null ? "null" : curr.ToString(),
+                member_id = memberId,
+                staff_id = staffId,
+                scene = scene,
+                trace_id = (long)traceId,
+                create_date = DateTime.Now
+            };
+        }
     }
 }

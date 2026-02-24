@@ -13,6 +13,9 @@ namespace SnowmeetOfficialAccount
             modelBuilder.Entity<MiniSession>().HasKey(m => new { m.session_key, m.session_type });
             //modelBuilder.Entity<MemberSocialAccount>().HasOne<Member>()
             //    .WithMany(m => m.memberSocialAccounts).HasForeignKey(m => m.member_id);
+            modelBuilder.Entity<GuarantyPayment>().HasKey(g => new { g.guaranty_id, g.payment_id });
+            modelBuilder.Entity<RentProductDetailInfo>().HasKey(i => new { i.field_id, i.product_id });
+            modelBuilder.Entity<RentProductDetailInfo>().HasKey(i => new { i.product_id, i.field_id });
         }
         public DbSet<SnowmeetOfficialAccount.Models.EfTest> EfTest { get; set; }
         public DbSet<OARecevie> oARecevie { get; set; }
@@ -37,6 +40,9 @@ namespace SnowmeetOfficialAccount
         public DbSet<StaffSocialAccount> staffSocialAccount { get; set; }
         public DbSet<TemplateMessage> templateMessage { get; set; }
         public DbSet<TemplateModel> templateModel {get; set;}
+        public DbSet<Models.Order> order {get; set;}
+        public DbSet<Models.OrderPayment> orderPayment { get; set; }
+        public DbSet<Models.OrderPaymentRefund> paymentRefund { get; set; }
         
     }
 }
