@@ -1,0 +1,30 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace SnowmeetOfficialAccount.Models
+{
+    [Table("mini_upload")]
+    public class UploadFile
+    {
+        [Key]
+        public int id { get; set; }
+        public string? owner { get; set; } = null;
+        public int? member_id { get; set; } = null;
+        public int? staff_id { get; set; } = null;
+        public string file_path_name { get; set; }
+        public int is_web { get; set; } = 1;
+        public string purpose { get; set; } = "";
+        public string file_type { get; set; } = "";
+        public string? thumb { get; set; } = null;
+        [NotMapped]
+        public string thumbUrl
+        {
+            get
+            {
+                return thumb == null ? file_path_name.Trim() : thumb.Trim();
+            }
+        }
+        public DateTime create_date { get; set; } = DateTime.Now;
+    }
+}
+
