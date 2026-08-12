@@ -74,6 +74,30 @@ namespace SnowmeetOfficialAccount.Controllers
             SendServiceMessage(msg);
         }
 
+        // 直接按公众号 openid 发客服文本消息，调用方（如 SnowmeetApi）自己拼好 content
+        // （可以内嵌 <a data-miniprogram-appid="" data-miniprogram-path="">文案</a> 做小程序跳转链接）。
+        // 不走 SendTextMessage 那套 unionId -> user 表反查——那张 user 表是老架构，现在的会员体系
+        // 用的是 member/member_social_account，SnowmeetApi 那边能直接查到 wechat_oa_openid，
+        // 没必要再绕一次反查。
+        [HttpGet]
+        public string SendTextMessageByOpenId(string openId, string content)
+        {
+            openId = Util.UrlDecode(openId).Trim();
+            content = Util.UrlDecode(content).Replace("+", " ").Trim();
+            if (openId.Equals("") || content.Equals(""))
+            {
+                return "fail";
+            }
+            OASent msg = new OASent()
+            {
+                id = 0,
+                MsgType = "text",
+                ToUserName = openId,
+                Content = content
+            };
+            return SendServiceMessage(msg);
+        }
+
         [NonAction]
         public string SendServiceMessage(OASent message)
         {
