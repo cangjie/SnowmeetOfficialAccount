@@ -1,0 +1,34 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace SnowmeetOfficialAccount.Models
+{
+    [Table("deposit_balance")]
+    public class DepositBalance
+    {
+        [Key]
+        public int id { get; set; }
+        public int deposit_id { get; set; }
+        public int member_id { get; set; }
+        public double amount { get; set; }
+        public int? payment_id { get; set; }
+        public int? order_id { get; set; }
+        public DateTime? extend_expire_date { get; set; }
+        public string? memo { get; set; }
+        public string? biz_id { get; set; }
+        public string? biz_type {get; set;} = null;
+        public string? source { get; set; }
+        public int valid {get; set;} = 1;
+        public DateTime? update_date {get; set;} = null;
+        public DateTime create_date { get; set; }
+        /*
+        [ForeignKey("order_id")]
+        public OrderOnline? order {get; set;}
+        */
+        [ForeignKey("order_id")]
+        public Models.Order? order { get; set; }
+        public DepositAccount depositAccount {get; set;}
+        [ForeignKey("payment_id")]
+        public OrderPayment? payment {get; set;}
+    }
+}

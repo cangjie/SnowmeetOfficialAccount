@@ -8,32 +8,41 @@ namespace SnowmeetOfficialAccount
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
         {
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MemberSocialAccount>().HasOne<Member>()
-                .WithMany(m => m.memberSocialAccounts).HasForeignKey(m => m.member_id);
+            modelBuilder.Entity<MiniSession>().HasKey(m => new { m.session_key, m.session_type });
+            //modelBuilder.Entity<MemberSocialAccount>().HasOne<Member>()
+            //    .WithMany(m => m.memberSocialAccounts).HasForeignKey(m => m.member_id);
+            modelBuilder.Entity<GuarantyPayment>().HasKey(g => new { g.guaranty_id, g.payment_id });
+            modelBuilder.Entity<RentProductDetailInfo>().HasKey(i => new { i.field_id, i.product_id });
+            modelBuilder.Entity<RentProductDetailInfo>().HasKey(i => new { i.product_id, i.field_id });
         }
-
         public DbSet<SnowmeetOfficialAccount.Models.EfTest> EfTest { get; set; }
-
         public DbSet<OARecevie> oARecevie { get; set; }
-
         public DbSet<SnowmeetOfficialAccount.Models.OASent> oASent { get; set; }
-
         public DbSet<User> user { get; set; }
-
         public DbSet<MiniUser> miniUser { get; set; }
-
         public DbSet<ShopSaleInteract> shopSaleInteract { get; set; }
-
-        public DbSet<Member> member {get; set;}
-
-        public DbSet<MemberSocialAccount> memberSocailAccount { get; set; }
-
+        public DbSet<OAUserInfo> oaUserInfo { get; set; }
+        public DbSet<Member> member { get; set; }
+        public DbSet<MemberSocialAccount> memberSocialAccount { get; set; }
         public DbSet<Ticket> ticket { get; set; }
-
         public DbSet<TicketTemplate> ticketTemplate { get; set; }
+        public DbSet<RentAdditionalPayment> rentAdditionalPayment { get; set; }
+        public DbSet<WebApiLog> webApiLog { get; set; }
+        public DbSet<MaintainLive> maintainLive { get; set; }
+        public DbSet<SocialAccountForJob> socialAccountForJob { get; set; }
+        public DbSet<MiniSession> miniSession { get; set; }
+        ///new season
+        public DbSet<ScanQrCode> scanQrCode { get; set; }
+        public DbSet<CoreDataModLog> dataLog { get; set; }
+        public DbSet<Staff> staff { get; set; }
+        public DbSet<StaffSocialAccount> staffSocialAccount { get; set; }
+        public DbSet<TemplateMessage> templateMessage { get; set; }
+        public DbSet<TemplateModel> templateModel {get; set;}
+        public DbSet<Models.Order> order {get; set;}
+        public DbSet<Models.OrderPayment> orderPayment { get; set; }
+        public DbSet<Models.OrderPaymentRefund> paymentRefund { get; set; }
         
     }
 }

@@ -28,16 +28,12 @@ namespace SnowmeetOfficialAccount
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
-
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SnowmeetApi", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SnowmeetOfficialAccount", Version = "v1" });
             });
-
-
-            string path = $"{Environment.CurrentDirectory}";
+            string path = Directory.GetCurrentDirectory();
 
             if (path.StartsWith("/"))
             {
@@ -70,12 +66,12 @@ namespace SnowmeetOfficialAccount
                 app.UseDeveloperExceptionPage();
             }
 
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SnowmeetApi v1"));
-            }
+            //}
 
             app.UseHttpsRedirection();
 
