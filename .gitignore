@@ -1,3 +1,4 @@
+access_token.officail_account
 wechat_post_*.txt
 *.sln
 config.*
@@ -411,3 +412,4 @@ ASALocalRun/
 
 config.sqlServer
 appsettings.*
+.vscode/*

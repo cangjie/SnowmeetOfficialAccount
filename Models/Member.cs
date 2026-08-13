@@ -14,11 +14,16 @@ namespace SnowmeetOfficialAccount.Models
         public int is_merge {get; set; } = 0;
         public int? merge_id {get; set;} = null;
         public string source {get; set; } = "";
-
+        public string channel_to_know { get; set; } = "";
         public int is_staff { get; set; } = 0;
         public int is_manager { get; set;} = 0;
         public int is_admin { get; set; } = 0;
-
+        public int? following_wechat { get; set; } = null;
+        public string member_type { get; set; } = "wechat";
+        public DateTime? update_date { get; set; } = null;
+        public DateTime create_date { get; set; } = DateTime.Now;
+        [NotMapped]
+        public bool isNew { get; set; } = false;
         public string GetNum(string type)
         {
             string openId = "";
@@ -50,8 +55,9 @@ namespace SnowmeetOfficialAccount.Models
             }
         }
 
+        public List<SocialAccountForJob>? jobAccounts { get; set; }
         
-        public ICollection<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
+        public List<MemberSocialAccount> memberSocialAccounts { get; set; } = new List<MemberSocialAccount>();
 
         public List<MemberSocialAccount> GetInfo(string type)
         {
