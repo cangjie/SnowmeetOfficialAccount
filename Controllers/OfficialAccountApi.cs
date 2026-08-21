@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using SnowmeetOfficialAccount.Models;
 using SnowmeetOfficialAccount;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -707,6 +708,106 @@ namespace SnowmeetOfficialAccount.Controllers
 
             return ret;
         }
+
+        /// <summary>
+        /// SnowmeetApi 的地址。公众号侧只做事件转发，发券的规则（限领、有效期、发券人）
+        /// 全部收在 SnowmeetApi，避免同一套口径散在两个仓里各写一遍。
+        /// </summary>
+        private const string SnowmeetApiHost = "https://mini.snowmeet.top";
+
+        /// <summary>
+        /// 固定二维码扫码领券（员工发券三条途径之三）。
+        /// scene = ticketqr_{批次id}，一个 (店员, 模板, 投放场景) 组合一张码。
+        /// 这里只负责把事件转给 SnowmeetApi，再把它的结论拼成图文消息回给顾客。
+        /// </summary>
+        [NonAction]
+        public async Task<string> DealTicketQrCode(OARecevie receiveMsg, string[] keyArr)
+        {
+            string title;
+            string desc;
+            if (keyArr.Length < 2 || !int.TryParse(keyArr[1].Trim(), out int batchId))
+            {
+                title = "二维码无效";
+                desc = "请联系工作人员重新获取。";
+            }
+            else
+            {
+                string url = SnowmeetApiHost + "/api/TicketShare/ClaimByOaScan?batchId=" + batchId
+                    + "&oaOpenId=" + Uri.EscapeDataString(receiveMsg.FromUserName.Trim());
+                string retJson = Util.GetWebContent(url);
+                string message = "";
+                int retCode = 1;
+                string ticketName = "";
+                try
+                {
+                    JObject o = JObject.Parse(retJson);
+                    retCode = o["code"] == null ? 1 : (int)o["code"];
+                    message = o["message"] == null ? "" : o["message"].ToString();
+                    if (retCode == 0 && o["data"] != null && o["data"]["name"] != null)
+                    {
+                        ticketName = o["data"]["name"].ToString();
+                    }
+                }
+                catch
+                {
+                    // 接口不通就明说，别让顾客对着一条成功提示白等
+                    retCode = 1;
+                    message = "网络繁忙，请稍后再扫一次。";
+                }
+                if (retCode == 0)
+                {
+                    title = ticketName.Trim() + " 已经领取成功";
+                    desc = "领取成功，点击进入小程序查看和使用。";
+                }
+                else
+                {
+                    title = "没有领取成功";
+                    desc = message.Trim() == "" ? "请稍后再试。" : message.Trim();
+                }
+            }
+            return await SendTicketNewsReply(receiveMsg, title, desc);
+        }
+
+        /// <summary>
+        /// 老固定二维码（getticket_*）已停用。已印出去的物料扫了会走到这里，
+        /// 回一条说明，比静默无响应好。
+        /// </summary>
+        [NonAction]
+        public async Task<string> DealRetiredTicketQrCode(OARecevie receiveMsg)
+        {
+            return await SendTicketNewsReply(receiveMsg,
+                "该二维码已停用",
+                "这张优惠券二维码已经过期，请向工作人员索取新的二维码。");
+        }
+
+        /// <summary>领券结果的图文消息，成功失败共用一套模板。</summary>
+        [NonAction]
+        private async Task<string> SendTicketNewsReply(OARecevie receiveMsg, string title, string desc)
+        {
+            string pic = "https://wxoa.snowmeet.top/0.png";
+            string url = "https://snowmeet.wanlonghuaxue.com/mapp/open_mapp_page.html?path=pages/mine/ticket/ticket_list&query=&version=trail";
+            OASent sent = new OASent()
+            {
+                id = 0,
+                is_service = 0,
+                FromUserName = _settings.originalId.Trim(),
+                ToUserName = receiveMsg.FromUserName,
+                origin_message_id = receiveMsg.id,
+                MsgType = "news",
+                newsContentArray = new OASent.NewsContent[] { new OASent.NewsContent()
+                {
+                    title = title,
+                    picUrl = pic,
+                    description = desc,
+                    url = url
+                } }
+            };
+            sent.Content = sent.GetXmlDocument().InnerXml.Trim();
+            await _context.oASent.AddAsync(sent);
+            await _context.SaveChangesAsync();
+            return sent.Content;
+        }
+
         [NonAction]
         public async Task<string> DealGetTicket(OARecevie receiveMsg, string[] keyArr)
         {
@@ -847,7 +948,13 @@ namespace SnowmeetOfficialAccount.Controllers
             switch (keyArr[0].Trim())
             {
                 case "getticket":
-                    ret = await DealGetTicket(receiveMsg, keyArr);
+                    // 老的固定二维码（scene = getticket_{模板id}_{渠道}）2026-08-21 起停用，
+                    // 改用 ticketqr_{批次id}：发券人、限领、有效期口径全部收到 SnowmeetApi 那边。
+                    // 已印出去的老物料扫了会收到一条"活动已结束"的提示，不再发券。
+                    ret = await DealRetiredTicketQrCode(receiveMsg);
+                    break;
+                case "ticketqr":
+                    ret = await DealTicketQrCode(receiveMsg, keyArr);
                     break;
                 case "import_ticket":
                     ret = await ImportTicket(receiveMsg, keyArr);
