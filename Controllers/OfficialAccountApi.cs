@@ -1005,6 +1005,12 @@ namespace SnowmeetOfficialAccount.Controllers
                 case "ticketactivity":
                     ret = await TicketActivity(receiveMsg);
                     break;
+                case "ticket":
+                    if (keyArr.Length > 1 && keyArr[1].Trim().Equals("gift"))
+                    {
+                        ret = await AcceptGiftedTicket(receiveMsg, keyArr);
+                    }
+                    break;
                 case "reserveskipass":
                     ret = await ReserveSkipass(receiveMsg);
                     break;
@@ -1159,6 +1165,27 @@ namespace SnowmeetOfficialAccount.Controllers
             string ret = reply.GetXmlDocument().InnerXml.Trim();
 
             return ret;
+        }
+
+        // 转赠优惠券的专属关注场景值（格式：ticket_gift_{券code}_{分享时间戳}，见 SnowmeetApi 的
+        // Ticket.transfer_scene）。扫码关注/已关注用户再扫码，都会走到这里——不管是新关注（subscribe）
+        // 还是已关注用户重新扫码（SCAN），只要命中这个场景值就直接调 SnowmeetApi 的接口自动接受，
+        // 不再依赖小程序端轮询、也不需要用户手动点"接受"。
+        // 这里只是转发触发，真正的校验（券是否还在分享中、是否转赠给自己、是否真的有关注记录）
+        // 全部在 SnowmeetApi 那边的 AcceptTicketCore/HasFollowedForTransfer 里做。
+        [NonAction]
+        public async Task<string> AcceptGiftedTicket(OARecevie receiveMsg, string[] keyArr)
+        {
+            if (keyArr.Length < 3)
+            {
+                return "success";
+            }
+            string code = keyArr[2].Trim();
+            string openId = receiveMsg.FromUserName.Trim();
+            string acceptUrl = "https://mini.snowmeet.top/api/Ticket/AcceptTicketByOaFollow?code="
+                + Util.UrlEncode(code) + "&oaOpenId=" + Util.UrlEncode(openId);
+            Util.GetWebContent(acceptUrl);
+            return "success";
         }
 
         [NonAction]
