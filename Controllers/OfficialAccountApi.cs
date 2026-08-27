@@ -1010,6 +1010,10 @@ namespace SnowmeetOfficialAccount.Controllers
                     {
                         ret = await AcceptGiftedTicket(receiveMsg, keyArr);
                     }
+                    else if (keyArr.Length > 1 && keyArr[1].Trim().Equals("share"))
+                    {
+                        ret = await ClaimSharedTicketByOaFollow(receiveMsg, keyArr);
+                    }
                     break;
                 case "reserveskipass":
                     ret = await ReserveSkipass(receiveMsg);
@@ -1185,6 +1189,21 @@ namespace SnowmeetOfficialAccount.Controllers
             string acceptUrl = "https://mini.snowmeet.top/api/Ticket/AcceptTicketByOaFollow?code="
                 + Util.UrlEncode(code) + "&oaOpenId=" + Util.UrlEncode(openId);
             Util.GetWebContent(acceptUrl);
+            return "success";
+        }
+
+        // 店员分享批次的专属关注场景值（ticket_share_{批次id}）。
+        // 好友分享由 SnowmeetApi 接受一次；群分享由 SnowmeetApi 按用户当天去重后领取。
+        [NonAction]
+        public async Task<string> ClaimSharedTicketByOaFollow(OARecevie receiveMsg, string[] keyArr)
+        {
+            if (keyArr.Length < 3 || !int.TryParse(keyArr[2].Trim(), out int batchId))
+            {
+                return "success";
+            }
+            string url = SnowmeetApiHost + "/api/TicketShare/ClaimSharedTicketByOaFollow?batchId="
+                + batchId + "&oaOpenId=" + Uri.EscapeDataString(receiveMsg.FromUserName.Trim());
+            Util.GetWebContent(url);
             return "success";
         }
 
