@@ -727,8 +727,7 @@ namespace SnowmeetOfficialAccount.Controllers
             string desc;
             if (keyArr.Length < 2 || !int.TryParse(keyArr[1].Trim(), out int batchId))
             {
-                title = "二维码无效";
-                desc = "请联系工作人员重新获取。";
+                return SendTicketResultMessage(receiveMsg, "二维码无效，请联系工作人员重新获取。", false);
             }
             else
             {
@@ -764,8 +763,12 @@ namespace SnowmeetOfficialAccount.Controllers
                     title = "没有领取成功";
                     desc = message.Trim() == "" ? "请稍后再试。" : message.Trim();
                 }
+                if (retCode == 0)
+                {
+                    return SendTicketResultMessage(receiveMsg, title, true);
+                }
+                return SendTicketResultMessage(receiveMsg, "没有领取成功：" + desc, false);
             }
-            return await SendTicketNewsReply(receiveMsg, title, desc);
         }
 
         /// <summary>
@@ -775,9 +778,8 @@ namespace SnowmeetOfficialAccount.Controllers
         [NonAction]
         public async Task<string> DealRetiredTicketQrCode(OARecevie receiveMsg)
         {
-            return await SendTicketNewsReply(receiveMsg,
-                "该二维码已停用",
-                "这张优惠券二维码已经过期，请向工作人员索取新的二维码。");
+            return SendTicketResultMessage(receiveMsg,
+                "该二维码已停用，这张优惠券二维码已经过期，请向工作人员索取新的二维码。", false);
         }
 
         /// <summary>领券结果的图文消息，成功失败共用一套模板。</summary>
@@ -806,6 +808,48 @@ namespace SnowmeetOfficialAccount.Controllers
             await _context.oASent.AddAsync(sent);
             await _context.SaveChangesAsync();
             return sent.Content;
+        }
+
+        [NonAction]
+        private async Task<string> SendTicketTextReply(OARecevie receiveMsg, string content)
+        {
+            OASent sent = new OASent()
+            {
+                id = 0,
+                is_service = 0,
+                FromUserName = _settings.originalId.Trim(),
+                ToUserName = receiveMsg.FromUserName,
+                origin_message_id = receiveMsg.id,
+                MsgType = "text",
+                Content = content
+            };
+            sent.Content = sent.GetXmlDocument().InnerXml.Trim();
+            await _context.oASent.AddAsync(sent);
+            await _context.SaveChangesAsync();
+            return sent.Content;
+        }
+
+        [NonAction]
+        private string SendTicketResultMessage(OARecevie receiveMsg, string content, bool includeMiniAppCard)
+        {
+            OASent message = new OASent()
+            {
+                id = 0,
+                FromUserName = receiveMsg.ToUserName,
+                ToUserName = receiveMsg.FromUserName,
+                MsgType = includeMiniAppCard ? "miniprogrampage" : "text",
+                Content = includeMiniAppCard ? "" : content,
+                newsContentArray = includeMiniAppCard
+                    ? new OASent.NewsContent[] { new OASent.NewsContent()
+                    {
+                        title = content,
+                        url = "/pages/mine/ticket/ticket_list",
+                        picUrl = "gltv7fpLtJQg_sTpVwzJY9cPiXuZfG91MKnJwscUqdikZhRDtHtrDeo-MiFdzebg"
+                    } }
+                    : new OASent.NewsContent[0]
+            };
+            SendServiceMessage(message);
+            return "success";
         }
 
         [NonAction]
@@ -1199,12 +1243,35 @@ namespace SnowmeetOfficialAccount.Controllers
         {
             if (keyArr.Length < 3 || !int.TryParse(keyArr[2].Trim(), out int batchId))
             {
-                return "success";
+                return await SendTicketTextReply(receiveMsg, "二维码无效，请联系工作人员重新获取。");
             }
             string url = SnowmeetApiHost + "/api/TicketShare/ClaimSharedTicketByOaFollow?batchId="
                 + batchId + "&oaOpenId=" + Uri.EscapeDataString(receiveMsg.FromUserName.Trim());
-            Util.GetWebContent(url);
-            return "success";
+            string retJson = Util.GetWebContent(url);
+            string message = "";
+            string ticketName = "优惠券";
+            int retCode = 1;
+            try
+            {
+                JObject o = JObject.Parse(retJson);
+                retCode = o["code"] == null ? 1 : (int)o["code"];
+                message = o["message"] == null ? "" : o["message"].ToString();
+                if (retCode == 0 && o["data"] != null && o["data"]["name"] != null)
+                {
+                    ticketName = o["data"]["name"].ToString();
+                }
+            }
+            catch
+            {
+                message = "网络繁忙，请稍后再扫一次。";
+            }
+            if (retCode == 0)
+            {
+                return SendTicketResultMessage(receiveMsg,
+                    ticketName.Trim() + " 已经领取成功", true);
+            }
+            return SendTicketResultMessage(receiveMsg,
+                "没有领取成功：" + (message.Trim() == "" ? "请稍后再试。" : message.Trim()), false);
         }
 
         [NonAction]
